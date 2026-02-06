@@ -1,50 +1,79 @@
-# Welcome to your Expo app 👋
+# BMI Go
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BMI Go is a modern, user-friendly mobile application built with React Native and Expo designed to help users calculate their Body Mass Index (BMI) and explore health-related content.
 
-## Get started
+## 📱 Features
 
-1. Install dependencies
+- **BMI Calculator**: Easily calculate your Body Mass Index by entering your height, weight, and age.
+- **Modern UI**: Sleek, dark-themed interface with gold accents and glassmorphism effects.
+- **Explore Page**: Discover health categories and related content in a masonry grid layout.
+- **Responsive Design**: optimized for both Android and iOS devices.
 
-   ```bash
-   npm install
-   ```
+## 🛠 Tech Stack
 
-2. Start the app
+- **Framework**: [React Native](https://reactnative.dev/)
+- **Platform**: [Expo](https://expo.dev/)
+- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: React Native StyleSheet with custom design tokens.
 
-   ```bash
-   npx expo start
-   ```
+## 🚀 Get Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Node.js (LTS recommended)
+- npm or yarn
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Installation
 
-## Get a fresh project
+1.  Clone the repository:
 
-When you're ready, run:
+    ```bash
+    git clone https://github.com/yourusername/bmigo.git
+    cd bmigo
+    ```
 
-```bash
-npm run reset-project
+2.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3.  Start the app:
+
+    ```bash
+    npx expo start
+    ```
+
+4.  Use the Expo Go app on your phone to scan the QR code, or run on an emulator:
+    - Press `a` for Android Emulator.
+    - Press `i` for iOS Simulator.
+
+## 📂 Project Structure
+
+```
+bmigo/
+├── app/                 # Expo Router application code
+│   ├── (tabs)/          # Tab-based navigation roots
+│   │   ├── index.tsx    # Home/Calculator screen
+│   │   └── explore.tsx  # Explore/Discover screen
+│   ├── _layout.tsx      # Root layout configuration
+│   └── modal.tsx        # Modal screen
+├── components/          # Reusable UI components
+├── assets/              # Images, fonts, and icons
+└── constants/           # App constants and theme colors
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤝 Contributing
 
-## Learn more
+Contributions are welcome! Please follow these steps:
 
-To learn more about developing your project with Expo, look at the following resources:
+1.  Fork the project.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📄 License
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This project is licensed under the MIT License.
