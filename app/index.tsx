@@ -1,28 +1,54 @@
+import Onboarding from "@/components/Onboarding";
 import SplashScreen from "@/components/SplashScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Auto-hide splash after 3 seconds
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    const checkOnboarding = async () => {
+      // Minimum delay for splash animation
+      const minDelay = new Promise((resolve) => setTimeout(resolve, 3000));
+      const [storageStatus] = await Promise.all([
+        AsyncStorage.getItem("hasOnboarded"),
+        minDelay,
+      ]);
+
+      if (storageStatus === "true") {
+        setShowOnboarding(false);
+      } else {
+        setShowOnboarding(true);
+      }
+      setShowSplash(false);
+    };
+
     if (showSplash) {
-      timer = setTimeout(() => {
-        setShowSplash(false);
-      }, 3000);
+      checkOnboarding();
     }
-    return () => clearTimeout(timer);
   }, [showSplash]);
 
-  const handleReplay = () => {
+  const handleReplay = async () => {
+    // Reset for demo purposes
+    await AsyncStorage.removeItem("hasOnboarded");
     setShowSplash(true);
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingFinish = async () => {
+    await AsyncStorage.setItem("hasOnboarded", "true");
+    setShowOnboarding(false);
   };
 
   if (showSplash) {
     return <SplashScreen />;
+  }
+
+  if (showOnboarding) {
+    return <Onboarding onFinish={handleOnboardingFinish} />;
   }
 
   return (
