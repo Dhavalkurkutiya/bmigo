@@ -1,8 +1,9 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Keyboard,
   ScrollView,
   StyleSheet,
   Switch,
@@ -32,10 +33,32 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
   const [age, setAge] = useState(26);
   const [isIndianMode, setIsIndianMode] = useState(false);
   const [isAthleteMode, setIsAthleteMode] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      },
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   const themeColors = {
+    // ... same theme colors
     background: isDark ? "#0d1b16" : "#f6f8f7",
     cardBg: isDark ? "#162621" : "#fff",
     textPrimary: isDark ? "#ffffff" : "#0d1b16",
@@ -443,44 +466,48 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
       </ScrollView>
 
       {/* Bottom Nav Simulation */}
-      <View
-        style={[
-          styles.bottomNav,
-          {
-            backgroundColor: themeColors.cardBg,
-            borderTopColor: themeColors.border,
-          },
-        ]}
-      >
-        <View style={styles.navItem}>
-          <MaterialIcons name="calculate" size={24} color="#2bee9d" />
-          <Text style={[styles.navText, { color: "#2bee9d" }]}>Calculator</Text>
+      {!isKeyboardVisible && (
+        <View
+          style={[
+            styles.bottomNav,
+            {
+              backgroundColor: themeColors.cardBg,
+              borderTopColor: themeColors.border,
+            },
+          ]}
+        >
+          <View style={styles.navItem}>
+            <MaterialIcons name="calculate" size={24} color="#2bee9d" />
+            <Text style={[styles.navText, { color: "#2bee9d" }]}>
+              Calculator
+            </Text>
+          </View>
+          <View style={styles.navItem}>
+            <MaterialIcons
+              name="history"
+              size={24}
+              color={themeColors.textSecondary}
+            />
+            <Text style={styles.navText}>History</Text>
+          </View>
+          <View style={styles.navItem}>
+            <MaterialIcons
+              name="analytics"
+              size={24}
+              color={themeColors.textSecondary}
+            />
+            <Text style={styles.navText}>Progress</Text>
+          </View>
+          <View style={styles.navItem}>
+            <MaterialIcons
+              name="person"
+              size={24}
+              color={themeColors.textSecondary}
+            />
+            <Text style={styles.navText}>Profile</Text>
+          </View>
         </View>
-        <View style={styles.navItem}>
-          <MaterialIcons
-            name="history"
-            size={24}
-            color={themeColors.textSecondary}
-          />
-          <Text style={styles.navText}>History</Text>
-        </View>
-        <View style={styles.navItem}>
-          <MaterialIcons
-            name="analytics"
-            size={24}
-            color={themeColors.textSecondary}
-          />
-          <Text style={styles.navText}>Progress</Text>
-        </View>
-        <View style={styles.navItem}>
-          <MaterialIcons
-            name="person"
-            size={24}
-            color={themeColors.textSecondary}
-          />
-          <Text style={styles.navText}>Profile</Text>
-        </View>
-      </View>
+      )}
     </View>
   );
 }

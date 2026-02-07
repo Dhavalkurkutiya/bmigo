@@ -4,10 +4,11 @@ BMI Go is a modern, user-friendly mobile application built with React Native and
 
 ## 📱 Features
 
-- **BMI Calculator**: Easily calculate your Body Mass Index by entering your height, weight, and age.
-- **Modern UI**: Sleek, dark-themed interface with gold accents and glassmorphism effects.
-- **Explore Page**: Discover health categories and related content in a masonry grid layout.
-- **Responsive Design**: optimized for both Android and iOS devices.
+- **Advanced BMI Calculation**: accurate BMI calculation with support for both **Standard** and **Indian (ICMR 2020)** classification modes.
+- **Athlete Mode**: Smart adjustments for individuals with high muscle mass, ensuring accurate health insights.
+- **Nutrition Engine**: Personalized daily Calorie, Protein, and Macro targets based on the **Mifflin-St Jeor Equation** and activity levels.
+- **Dynamic Results**: Interactive **Clinical Scale** with precise color-coded markers and tailored health advice.
+- **Modern UI**: Sleek, responsive interface with dark/light mode support and smooth animations.
 
 ## 🛠 Tech Stack
 
@@ -29,7 +30,7 @@ BMI Go is a modern, user-friendly mobile application built with React Native and
 1.  Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/bmigo.git
+    git clone https://github.com/Dhavalkurkutiya/bmigo.git
     cd bmigo
     ```
 
