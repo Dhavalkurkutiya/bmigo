@@ -77,6 +77,70 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
   const idealMax = (isIndian ? 22.9 : 24.9) * heightM * heightM;
   const idealWeight = ((idealMin + idealMax) / 2).toFixed(1);
 
+  // Health Insight Logic
+  let healthInsight = "";
+  if (status.includes("Underweight")) {
+    healthInsight =
+      "You are below the recommended weight. diverse nutrient-rich diet and strength training may help.";
+  } else if (status === "Normal") {
+    healthInsight =
+      "Excellent! You are at a healthy weight. Keep up the balanced diet and regular activity.";
+  } else if (status.includes("Overweight")) {
+    healthInsight =
+      "You are slightly above ideal weight. Regular cardio and portion control can help you reach your goals.";
+  } else if (status.includes("Obese")) {
+    healthInsight =
+      "Your weight may impact your health. Consulting a professional for a personalized plan is recommended.";
+  } else {
+    healthInsight = "Stay active and eat well to maintain good health.";
+  }
+
+  // --- NUTRITION ALGORITHM START ---
+  // 1. Constants
+  const ICMR_PROTEIN_PER_KG = 0.83;
+  const ATHLETE_PROTEIN_MULTIPLIER = 1.8;
+  const ATHLETE_MIN_ACTIVITY = 1.55;
+  const DEFAULT_ACTIVITY = 1.375; // Assuming Lightly Active if not specified
+
+  // 2. Input Setup
+  const { weight, height, age, gender, isAthleteMode, isIndianMode } = data;
+  let activityLevel = DEFAULT_ACTIVITY;
+
+  // 3. BMR Calculation (Mifflin-St Jeor)
+  let bmr = 0;
+  if (gender === "male") {
+    bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+  } else {
+    bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+  }
+
+  // 4. TDEE Calculation
+  if (isAthleteMode && activityLevel < ATHLETE_MIN_ACTIVITY) {
+    activityLevel = ATHLETE_MIN_ACTIVITY;
+  }
+  const tdee = Math.round(bmr * activityLevel);
+
+  let targetProtein = 0;
+  if (isAthleteMode) {
+    targetProtein = Math.round(weight * ATHLETE_PROTEIN_MULTIPLIER);
+  } else {
+    targetProtein = Math.round(weight * ICMR_PROTEIN_PER_KG);
+  }
+  const proteinCalories = targetProtein * 4;
+  const remainingCalories = tdee - proteinCalories;
+
+  let carbSplit = 0.5;
+  let fatSplit = 0.5;
+
+  if (isIndianMode) {
+    carbSplit = 0.65;
+    fatSplit = 0.35;
+  }
+
+  const targetCarbs = Math.round((remainingCalories * carbSplit) / 4);
+  const targetFats = Math.round((remainingCalories * fatSplit) / 9);
+  // --- NUTRITION ALGORITHM END ---
+
   return (
     <View
       style={[styles.container, { backgroundColor: themeColors.background }]}
@@ -246,11 +310,13 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
               <View
                 style={[
                   styles.markerLine,
-                  { backgroundColor: themeColors.textPrimary },
+                  { backgroundColor: color }, // Use dynamic status color
                 ]}
               />
-              <View style={styles.markerTag}>
-                <Text style={styles.markerText}>{bmiFormatted}</Text>
+              <View style={[styles.markerTag, { backgroundColor: color }]}>
+                <Text style={[styles.markerText, { color: "#ffffff" }]}>
+                  {bmiFormatted}
+                </Text>
               </View>
             </View>
           </View>
@@ -260,6 +326,64 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
             <LegendItem color="#2bee9d" label="Normal (18.5–22.9)" isBold />
             <LegendItem color="#fbbf24" label="Overweight (23.0–24.9)" />
             <LegendItem color="#ef4444" label="Obese (>30.0)" />
+          </View>
+        </View>
+
+        {/* Nutrition Plan */}
+        <View
+          style={[
+            styles.cardFull,
+            {
+              backgroundColor: themeColors.cardBg,
+              borderColor: themeColors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.label, { marginBottom: 16 }]}>
+            DAILY NUTRITION TARGETS
+          </Text>
+
+          <View style={styles.rowBetween}>
+            <View>
+              <Text
+                style={[styles.valueText, { color: themeColors.textPrimary }]}
+              >
+                {tdee}
+              </Text>
+              <Text style={styles.unit}>Calories / Day</Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={{ fontSize: 10, color: themeColors.textSecondary }}>
+                {isAthleteMode ? "Athlete Mode Active" : "Standard Mode"}
+              </Text>
+              <Text style={{ fontSize: 10, color: themeColors.textSecondary }}>
+                Base: Mifflin-St Jeor
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.macroGrid}>
+            <MacroCard
+              label="Protein"
+              value={`${targetProtein}g`}
+              subLabel={isAthleteMode ? "High (1.8g/kg)" : "Std (0.83g/kg)"}
+              color="#60a5fa"
+              themeColors={themeColors}
+            />
+            <MacroCard
+              label="Carbs"
+              value={`${targetCarbs}g`}
+              subLabel={isIndianMode ? "65% of rem." : "50% of rem."}
+              color="#fbbf24"
+              themeColors={themeColors}
+            />
+            <MacroCard
+              label="Fats"
+              value={`${targetFats}g`}
+              subLabel={isIndianMode ? "35% of rem." : "50% of rem."}
+              color="#f97316"
+              themeColors={themeColors}
+            />
           </View>
         </View>
 
@@ -295,9 +419,7 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
             <Text
               style={[styles.insightText, { color: themeColors.textSecondary }]}
             >
-              {status === "Normal"
-                ? "Great job! Keep maintaining your healthy lifestyle."
-                : "Consider consulting a healthcare provider for personalized advice."}
+              {healthInsight}
             </Text>
           </View>
         </View>
@@ -327,6 +449,21 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
     </View>
   );
 }
+
+const MacroCard = ({ label, value, subLabel, color, themeColors }: any) => (
+  <View
+    style={[
+      styles.macroCard,
+      { backgroundColor: color + "15", borderColor: color + "30" },
+    ]}
+  >
+    <Text style={[styles.macroLabel, { color: color }]}>{label}</Text>
+    <Text style={[styles.macroValue, { color: themeColors.textPrimary }]}>
+      {value}
+    </Text>
+    <Text style={styles.macroSub}>{subLabel}</Text>
+  </View>
+);
 
 const LegendItem = ({
   color,
@@ -602,5 +739,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: "#0d1b16",
+  },
+  macroGrid: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 16,
+  },
+  macroCard: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  macroLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  macroValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  macroSub: {
+    fontSize: 9,
+    color: "#64748b",
+    textAlign: "center",
   },
 });
