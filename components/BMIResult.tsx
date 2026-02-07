@@ -66,8 +66,11 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
     } else if (bmi < 30) {
       status = "Overweight";
       color = "#fbbf24";
+    } else if (bmi < 35) {
+      status = "Obese I";
+      color = "#f97316";
     } else {
-      status = "Obese";
+      status = "Obese II";
       color = "#ef4444";
     }
   }
@@ -265,67 +268,106 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
           </View>
 
           <View style={styles.scaleContainer}>
-            {/* Simplified Visual Bar */}
+            {/* 
+                Visual Scale Logic: 
+                We map physical BMI ranges to flex values to ensure the marker lands on the correct color.
+            */}
             <View style={styles.scaleBar}>
+              {/* Underweight: < 18.5 */}
               <View
                 style={[
                   styles.scaleSegment,
-                  { backgroundColor: "#60a5fa", flex: 15 },
+                  { backgroundColor: "#60a5fa", flex: 3.5 },
                 ]}
               />
+              {/* Normal: 18.5 - (23 Indian / 25 Std) */}
               <View
                 style={[
                   styles.scaleSegment,
-                  { backgroundColor: "#2bee9d", flex: 25 },
+                  { backgroundColor: "#2bee9d", flex: isIndian ? 4.5 : 6.5 },
                 ]}
               />
+              {/* Overweight: (23/25) - (25/30) */}
               <View
                 style={[
                   styles.scaleSegment,
-                  { backgroundColor: "#fbbf24", flex: 15 },
+                  { backgroundColor: "#fbbf24", flex: isIndian ? 2.0 : 5.0 },
                 ]}
               />
+              {/* Obese I: (25/30) - (30/35) */}
               <View
                 style={[
                   styles.scaleSegment,
-                  { backgroundColor: "#f97316", flex: 20 },
+                  { backgroundColor: "#f97316", flex: 5.0 },
                 ]}
               />
+              {/* Obese II: > (30/35) */}
               <View
                 style={[
                   styles.scaleSegment,
-                  { backgroundColor: "#ef4444", flex: 25 },
+                  { backgroundColor: "#ef4444", flex: 5.0 },
                 ]}
               />
             </View>
-            {/* Marker */}
-            <View
-              style={[
-                styles.marker,
-                {
-                  left: `${Math.min(Math.max(((bmi - 15) / (35 - 15)) * 100, 0), 100)}%`,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.markerLine,
-                  { backgroundColor: color }, // Use dynamic status color
-                ]}
-              />
-              <View style={[styles.markerTag, { backgroundColor: color }]}>
-                <Text style={[styles.markerText, { color: "#ffffff" }]}>
-                  {bmiFormatted}
-                </Text>
-              </View>
-            </View>
+
+            {/* Marker Calculation */}
+            {(() => {
+              // Define visual bounds to match the flex ratios above
+              const minVis = 15.0; // Starting BMI for the bar
+              const maxVis = isIndian ? 35.0 : 40.0; // Ending BMI based on ranges
+
+              // Calculate percentage
+              const pct =
+                ((Math.min(Math.max(bmi, minVis), maxVis) - minVis) /
+                  (maxVis - minVis)) *
+                100;
+
+              return (
+                <View
+                  style={[
+                    styles.marker,
+                    {
+                      left: `${pct}%`,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[styles.markerLine, { backgroundColor: color }]}
+                  />
+                  <View style={[styles.markerTag, { backgroundColor: color }]}>
+                    <Text style={[styles.markerText, { color: "#ffffff" }]}>
+                      {bmiFormatted}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })()}
           </View>
 
           <View style={styles.legendGrid}>
-            <LegendItem color="#60a5fa" label="Underweight (<18.5)" />
-            <LegendItem color="#2bee9d" label="Normal (18.5–22.9)" isBold />
-            <LegendItem color="#fbbf24" label="Overweight (23.0–24.9)" />
-            <LegendItem color="#ef4444" label="Obese (>30.0)" />
+            <LegendItem color="#60a5fa" label={`Underweight (<18.5)`} />
+            <LegendItem
+              color="#2bee9d"
+              label={`Normal (${isIndian ? "18.5-22.9" : "18.5-24.9"})`}
+              isBold={status === "Normal"}
+            />
+            <LegendItem
+              color="#fbbf24"
+              label={`Overweight (${isIndian ? "23.0-24.9" : "25.0-29.9"})`}
+              isBold={status.includes("Overweight")}
+            />
+            <LegendItem
+              color="#f97316"
+              label={`Obese I (${isIndian ? "25.0-29.9" : "30.0-34.9"})`}
+              isBold={status === "Obese I" || (status === "Obese" && bmi < 35)}
+            />
+            <LegendItem
+              color="#ef4444"
+              label={`Obese II (${isIndian ? ">30.0" : ">35.0"})`}
+              isBold={
+                status === "Obese II" || (status === "Obese" && bmi >= 35)
+              }
+            />
           </View>
         </View>
 
