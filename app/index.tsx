@@ -4,6 +4,7 @@ import Onboarding from "@/components/Onboarding";
 import SplashScreen from "@/components/SplashScreen";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ExpoSplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Alert, BackHandler, StyleSheet, View } from "react-native";
@@ -15,6 +16,19 @@ export default function HomeScreen() {
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [bmiData, setBmiData] = useState<BMIInputData | null>(null);
+
+  useEffect(() => {
+    // Hide native splash screen once the custom splash is mounted
+    const hideNativeSplash = async () => {
+      try {
+        await ExpoSplashScreen.hideAsync();
+      } catch (e) {
+        console.warn("Error hiding splash screen:", e);
+      }
+    };
+
+    hideNativeSplash();
+  }, []);
 
   useEffect(() => {
     const checkOnboarding = async () => {

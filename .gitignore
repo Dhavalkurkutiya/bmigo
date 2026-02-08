@@ -18,6 +18,11 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+.agents
+.agent
+node_modules
+.git
+
 # Metro
 .metro-health-check*
 
