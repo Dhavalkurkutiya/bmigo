@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BMIInputData } from "./BMICalculator";
 
 interface BMIResultProps {
@@ -145,7 +146,7 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
   // --- NUTRITION ALGORITHM END ---
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <View style={styles.header}>
@@ -488,7 +489,7 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

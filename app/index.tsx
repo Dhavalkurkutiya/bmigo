@@ -91,15 +91,15 @@ export default function HomeScreen() {
     return <Onboarding onFinish={handleOnboardingFinish} />;
   }
 
+  if (bmiData) {
+    return <BMIResult data={bmiData} onReset={() => setBmiData(null)} />;
+  }
+
   return (
     <View style={[styles.container, isDark && styles.darkContainer]}>
       <StatusBar style={isDark ? "light" : "dark"} />
       <SafeAreaView style={styles.safeArea}>
-        {bmiData ? (
-          <BMIResult data={bmiData} onReset={() => setBmiData(null)} />
-        ) : (
-          <BMICalculator onCalculate={setBmiData} />
-        )}
+        <BMICalculator onCalculate={setBmiData} />
       </SafeAreaView>
     </View>
   );

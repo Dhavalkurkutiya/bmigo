@@ -1,6 +1,8 @@
+import ComingSoon from "@/components/ComingSoon";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+
 import React, { useEffect, useState } from "react";
 import {
   Keyboard,
@@ -33,6 +35,10 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
   const [age, setAge] = useState(26);
   const [isIndianMode, setIsIndianMode] = useState(false);
   const [isAthleteMode, setIsAthleteMode] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<
+    "calculator" | "history" | "progress" | "profile"
+  >("calculator");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -73,218 +79,164 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
     <View
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {/* Custom Header */}
-        <View style={styles.header}>
-          <View>
-            <View style={styles.logoRow}>
-              <Text
-                style={[styles.logoText, { color: themeColors.textPrimary }]}
-              >
-                BMI
-              </Text>
-              <Text style={[styles.logoText, { color: "#0ea5e9" }]}> Go</Text>
-            </View>
-            <Text style={styles.tagline}>ACCURACY & EMPATHY</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <Text
-              style={[
-                styles.smartInputText,
-                { color: themeColors.textPrimary },
-              ]}
-            >
-              Smart Input
-            </Text>
-            <View style={styles.progressBarBg}>
-              <View style={styles.progressBarFill} />
-            </View>
-          </View>
-        </View>
-
-        {/* Gender Selection */}
-        <View style={styles.section}>
-          <Text style={styles.label}>SELECT GENDER</Text>
-          <View
-            style={[
-              styles.genderContainer,
-              { backgroundColor: themeColors.genderBg },
-            ]}
-          >
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                gender === "male" && {
-                  backgroundColor: themeColors.cardBg,
-                  shadowColor: "#000",
-                },
-              ]}
-              onPress={() => setGender("male")}
-            >
-              <MaterialIcons
-                name="male"
-                size={24}
-                color={
-                  gender === "male"
-                    ? themeColors.textPrimary
-                    : themeColors.textSecondary
-                }
-              />
-              <Text
-                style={[
-                  styles.genderText,
-                  gender === "male"
-                    ? { color: themeColors.textPrimary }
-                    : { color: themeColors.textSecondary },
-                ]}
-              >
-                Male
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                gender === "female" && {
-                  backgroundColor: themeColors.cardBg,
-                  shadowColor: "#000",
-                },
-              ]}
-              onPress={() => setGender("female")}
-            >
-              <MaterialIcons
-                name="female"
-                size={24}
-                color={
-                  gender === "female"
-                    ? themeColors.textPrimary
-                    : themeColors.textSecondary
-                }
-              />
-              <Text
-                style={[
-                  styles.genderText,
-                  gender === "female"
-                    ? { color: themeColors.textPrimary }
-                    : { color: themeColors.textSecondary },
-                ]}
-              >
-                Female
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Height Slider */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: themeColors.cardBg,
-              borderColor: themeColors.border,
-            },
-          ]}
+      {activeTab === "calculator" ? (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.contentContainer}
         >
-          <View style={styles.cardHeader}>
+          {/* Custom Header */}
+          <View style={styles.header}>
             <View>
-              <Text style={styles.label}>HEIGHT</Text>
-              <View style={styles.heightValueContainer}>
-                <TextInput
-                  style={[
-                    styles.largeValue,
-                    { color: themeColors.textPrimary },
-                  ]}
-                  value={height.toString()}
-                  onChangeText={(text) => {
-                    const val = parseInt(text);
-                    if (!isNaN(val)) {
-                      setHeight(val);
-                    } else if (text === "") {
-                      setHeight(0);
-                    }
-                  }}
-                  keyboardType="numeric"
-                  maxLength={3}
-                />
-                <Text style={styles.unit}>cm</Text>
+              <View style={styles.logoRow}>
+                <Text
+                  style={[styles.logoText, { color: themeColors.textPrimary }]}
+                >
+                  BMI
+                </Text>
+                <Text style={[styles.logoText, { color: "#0ea5e9" }]}> Go</Text>
+              </View>
+              <Text style={styles.tagline}>ACCURACY & EMPATHY</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <Text
+                style={[
+                  styles.smartInputText,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                Smart Input
+              </Text>
+              <View style={styles.progressBarBg}>
+                <View style={styles.progressBarFill} />
               </View>
             </View>
-            <MaterialIcons name="height" size={32} color="#2bee9d" />
           </View>
 
-          <View style={styles.sliderContainer}>
-            <Slider
-              style={{ width: "100%", height: 40 }}
-              minimumValue={100}
-              maximumValue={250}
-              step={1}
-              value={height}
-              onValueChange={setHeight}
-              minimumTrackTintColor="#2bee9d"
-              maximumTrackTintColor={isDark ? "#2a3c34" : "#e2e8f0"}
-              thumbTintColor="#2bee9d"
-            />
-          </View>
-          <View style={styles.sliderLabels}>
-            <TouchableOpacity
-              onPress={() => setHeight(Math.max(100, height - 1))}
+          {/* Gender Selection */}
+          <View style={styles.section}>
+            <Text style={styles.label}>SELECT GENDER</Text>
+            <View
               style={[
-                styles.counterButton,
-                {
-                  backgroundColor: themeColors.cardBg,
-                  borderColor: themeColors.border,
-                },
+                styles.genderContainer,
+                { backgroundColor: themeColors.genderBg },
               ]}
             >
-              <MaterialIcons
-                name="remove"
-                size={20}
-                color={themeColors.textPrimary}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setHeight(Math.min(250, height + 1))}
-              style={[
-                styles.counterButton,
-                {
-                  backgroundColor: themeColors.cardBg,
-                  borderColor: themeColors.border,
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="add"
-                size={20}
-                color={themeColors.textPrimary}
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.genderButton,
+                  gender === "male" && {
+                    backgroundColor: themeColors.cardBg,
+                    shadowColor: "#000",
+                  },
+                ]}
+                onPress={() => setGender("male")}
+              >
+                <MaterialIcons
+                  name="male"
+                  size={24}
+                  color={
+                    gender === "male"
+                      ? themeColors.textPrimary
+                      : themeColors.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.genderText,
+                    gender === "male"
+                      ? { color: themeColors.textPrimary }
+                      : { color: themeColors.textSecondary },
+                  ]}
+                >
+                  Male
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.genderButton,
+                  gender === "female" && {
+                    backgroundColor: themeColors.cardBg,
+                    shadowColor: "#000",
+                  },
+                ]}
+                onPress={() => setGender("female")}
+              >
+                <MaterialIcons
+                  name="female"
+                  size={24}
+                  color={
+                    gender === "female"
+                      ? themeColors.textPrimary
+                      : themeColors.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.genderText,
+                    gender === "female"
+                      ? { color: themeColors.textPrimary }
+                      : { color: themeColors.textSecondary },
+                  ]}
+                >
+                  Female
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        {/* Weight & Age */}
-        <View style={styles.row}>
+          {/* Height Slider */}
           <View
             style={[
-              styles.halfCard,
+              styles.card,
               {
                 backgroundColor: themeColors.cardBg,
                 borderColor: themeColors.border,
               },
             ]}
           >
-            <Text style={styles.label}>WEIGHT (KG)</Text>
-            <TextInput
-              style={[styles.inputLarge, { color: themeColors.textPrimary }]}
-              value={weight.toString()}
-              onChangeText={(t) => setWeight(Number(t) || 0)}
-              keyboardType="numeric"
-              placeholderTextColor={themeColors.textSecondary}
-            />
-            <View style={styles.counterRow}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text style={styles.label}>HEIGHT</Text>
+                <View style={styles.heightValueContainer}>
+                  <TextInput
+                    style={[
+                      styles.largeValue,
+                      { color: themeColors.textPrimary },
+                    ]}
+                    value={height.toString()}
+                    onChangeText={(text) => {
+                      const val = parseInt(text);
+                      if (!isNaN(val)) {
+                        setHeight(val);
+                      } else if (text === "") {
+                        setHeight(0);
+                      }
+                    }}
+                    keyboardType="numeric"
+                    maxLength={3}
+                  />
+                  <Text style={styles.unit}>cm</Text>
+                </View>
+              </View>
+              <MaterialIcons name="height" size={32} color="#2bee9d" />
+            </View>
+
+            <View style={styles.sliderContainer}>
+              <Slider
+                style={{ width: "100%", height: 40 }}
+                minimumValue={100}
+                maximumValue={250}
+                step={1}
+                value={height}
+                onValueChange={setHeight}
+                minimumTrackTintColor="#2bee9d"
+                maximumTrackTintColor={isDark ? "#2a3c34" : "#e2e8f0"}
+                thumbTintColor="#2bee9d"
+              />
+            </View>
+            <View style={styles.sliderLabels}>
               <TouchableOpacity
-                onPress={() => setWeight(Math.max(1, weight - 1))}
+                onPress={() => setHeight(Math.max(100, height - 1))}
                 style={[
                   styles.counterButton,
                   {
@@ -300,7 +252,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setWeight(weight + 1)}
+                onPress={() => setHeight(Math.min(250, height + 1))}
                 style={[
                   styles.counterButton,
                   {
@@ -318,152 +270,220 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             </View>
           </View>
 
+          {/* Weight & Age */}
+          <View style={styles.row}>
+            <View
+              style={[
+                styles.halfCard,
+                {
+                  backgroundColor: themeColors.cardBg,
+                  borderColor: themeColors.border,
+                },
+              ]}
+            >
+              <Text style={styles.label}>WEIGHT (KG)</Text>
+              <TextInput
+                style={[styles.inputLarge, { color: themeColors.textPrimary }]}
+                value={weight.toString()}
+                onChangeText={(t) => setWeight(Number(t) || 0)}
+                keyboardType="numeric"
+                placeholderTextColor={themeColors.textSecondary}
+              />
+              <View style={styles.counterRow}>
+                <TouchableOpacity
+                  onPress={() => setWeight(Math.max(1, weight - 1))}
+                  style={[
+                    styles.counterButton,
+                    {
+                      backgroundColor: themeColors.cardBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="remove"
+                    size={20}
+                    color={themeColors.textPrimary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setWeight(weight + 1)}
+                  style={[
+                    styles.counterButton,
+                    {
+                      backgroundColor: themeColors.cardBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="add"
+                    size={20}
+                    color={themeColors.textPrimary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View
+              style={[
+                styles.halfCard,
+                {
+                  backgroundColor: themeColors.cardBg,
+                  borderColor: themeColors.border,
+                },
+              ]}
+            >
+              <Text style={styles.label}>AGE</Text>
+              <TextInput
+                style={[styles.inputLarge, { color: themeColors.textPrimary }]}
+                value={age.toString()}
+                onChangeText={(t) => setAge(Number(t) || 0)}
+                keyboardType="numeric"
+                placeholderTextColor={themeColors.textSecondary}
+              />
+              <View style={styles.counterRow}>
+                <TouchableOpacity
+                  onPress={() => setAge(Math.max(1, age - 1))}
+                  style={[
+                    styles.counterButton,
+                    {
+                      backgroundColor: themeColors.cardBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="remove"
+                    size={20}
+                    color={themeColors.textPrimary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setAge(age + 1)}
+                  style={[
+                    styles.counterButton,
+                    {
+                      backgroundColor: themeColors.cardBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="add"
+                    size={20}
+                    color={themeColors.textPrimary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* Toggles */}
           <View
             style={[
-              styles.halfCard,
+              styles.toggleCard,
               {
-                backgroundColor: themeColors.cardBg,
+                backgroundColor: isDark
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(255,255,255,0.6)",
                 borderColor: themeColors.border,
               },
             ]}
           >
-            <Text style={styles.label}>AGE</Text>
-            <TextInput
-              style={[styles.inputLarge, { color: themeColors.textPrimary }]}
-              value={age.toString()}
-              onChangeText={(t) => setAge(Number(t) || 0)}
-              keyboardType="numeric"
-              placeholderTextColor={themeColors.textSecondary}
+            <View style={styles.toggleInfo}>
+              <View style={styles.iconCircle}>
+                <MaterialIcons name="public" size={24} color="#2bee9d" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.toggleTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  Indian Mode (ICMR 2020)
+                </Text>
+                <Text style={styles.toggleDesc}>
+                  Adjusts results for localized health standards.
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isIndianMode}
+              onValueChange={setIsIndianMode}
+              trackColor={{
+                false: isDark ? "#2a3c34" : "#e2e8f0",
+                true: "#2bee9d",
+              }}
+              thumbColor={"#fff"}
             />
-            <View style={styles.counterRow}>
-              <TouchableOpacity
-                onPress={() => setAge(Math.max(1, age - 1))}
-                style={[
-                  styles.counterButton,
-                  {
-                    backgroundColor: themeColors.cardBg,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-              >
+          </View>
+
+          <View
+            style={[
+              styles.toggleCard,
+              {
+                backgroundColor: isDark
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(255,255,255,0.6)",
+                borderColor: themeColors.border,
+              },
+            ]}
+          >
+            <View style={styles.toggleInfo}>
+              <View style={styles.iconCircle}>
                 <MaterialIcons
-                  name="remove"
-                  size={20}
-                  color={themeColors.textPrimary}
+                  name="fitness-center"
+                  size={24}
+                  color="#2bee9d"
                 />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setAge(age + 1)}
-                style={[
-                  styles.counterButton,
-                  {
-                    backgroundColor: themeColors.cardBg,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-              >
-                <MaterialIcons
-                  name="add"
-                  size={20}
-                  color={themeColors.textPrimary}
-                />
-              </TouchableOpacity>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.toggleTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  Athlete Mode
+                </Text>
+                <Text style={styles.toggleDesc}>
+                  Optimized for high muscle mass.
+                </Text>
+              </View>
             </View>
+            <Switch
+              value={isAthleteMode}
+              onValueChange={setIsAthleteMode}
+              trackColor={{
+                false: isDark ? "#2a3c34" : "#e2e8f0",
+                true: "#2bee9d",
+              }}
+              thumbColor={"#fff"}
+            />
           </View>
-        </View>
 
-        {/* Toggles */}
-        <View
-          style={[
-            styles.toggleCard,
-            {
-              backgroundColor: isDark
-                ? "rgba(255,255,255,0.05)"
-                : "rgba(255,255,255,0.6)",
-              borderColor: themeColors.border,
-            },
-          ]}
-        >
-          <View style={styles.toggleInfo}>
-            <View style={styles.iconCircle}>
-              <MaterialIcons name="public" size={24} color="#2bee9d" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[styles.toggleTitle, { color: themeColors.textPrimary }]}
-              >
-                Indian Mode (ICMR 2020)
-              </Text>
-              <Text style={styles.toggleDesc}>
-                Adjusts results for localized health standards.
-              </Text>
-            </View>
-          </View>
-          <Switch
-            value={isIndianMode}
-            onValueChange={setIsIndianMode}
-            trackColor={{
-              false: isDark ? "#2a3c34" : "#e2e8f0",
-              true: "#2bee9d",
-            }}
-            thumbColor={"#fff"}
-          />
-        </View>
-
-        <View
-          style={[
-            styles.toggleCard,
-            {
-              backgroundColor: isDark
-                ? "rgba(255,255,255,0.05)"
-                : "rgba(255,255,255,0.6)",
-              borderColor: themeColors.border,
-            },
-          ]}
-        >
-          <View style={styles.toggleInfo}>
-            <View style={styles.iconCircle}>
-              <MaterialIcons name="fitness-center" size={24} color="#2bee9d" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[styles.toggleTitle, { color: themeColors.textPrimary }]}
-              >
-                Athlete Mode
-              </Text>
-              <Text style={styles.toggleDesc}>
-                Optimized for high muscle mass.
-              </Text>
-            </View>
-          </View>
-          <Switch
-            value={isAthleteMode}
-            onValueChange={setIsAthleteMode}
-            trackColor={{
-              false: isDark ? "#2a3c34" : "#e2e8f0",
-              true: "#2bee9d",
-            }}
-            thumbColor={"#fff"}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={styles.calculateButton}
-          onPress={() =>
-            onCalculate({
-              gender,
-              height,
-              weight,
-              age,
-              isIndianMode,
-              isAthleteMode,
-            })
-          }
-        >
-          <Text style={styles.calculateButtonText}>Calculate BMI</Text>
-          <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            style={styles.calculateButton}
+            onPress={() =>
+              onCalculate({
+                gender,
+                height,
+                weight,
+                age,
+                isIndianMode,
+                isAthleteMode,
+              })
+            }
+          >
+            <Text style={styles.calculateButtonText}>Calculate BMI</Text>
+            <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
+          </TouchableOpacity>
+        </ScrollView>
+      ) : (
+        <ComingSoon />
+      )}
 
       {/* Bottom Nav Simulation */}
       {!isKeyboardVisible && (
@@ -476,36 +496,108 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             },
           ]}
         >
-          <View style={styles.navItem}>
-            <MaterialIcons name="calculate" size={24} color="#2bee9d" />
-            <Text style={[styles.navText, { color: "#2bee9d" }]}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setActiveTab("calculator")}
+          >
+            <MaterialIcons
+              name="calculate"
+              size={24}
+              color={
+                activeTab === "calculator"
+                  ? "#2bee9d"
+                  : themeColors.textSecondary
+              }
+            />
+            <Text
+              style={[
+                styles.navText,
+                {
+                  color:
+                    activeTab === "calculator"
+                      ? "#2bee9d"
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
               Calculator
             </Text>
-          </View>
-          <View style={styles.navItem}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setActiveTab("history")}
+          >
             <MaterialIcons
               name="history"
               size={24}
-              color={themeColors.textSecondary}
+              color={
+                activeTab === "history" ? "#2bee9d" : themeColors.textSecondary
+              }
             />
-            <Text style={styles.navText}>History</Text>
-          </View>
-          <View style={styles.navItem}>
+            <Text
+              style={[
+                styles.navText,
+                {
+                  color:
+                    activeTab === "history"
+                      ? "#2bee9d"
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              History
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setActiveTab("progress")}
+          >
             <MaterialIcons
               name="analytics"
               size={24}
-              color={themeColors.textSecondary}
+              color={
+                activeTab === "progress" ? "#2bee9d" : themeColors.textSecondary
+              }
             />
-            <Text style={styles.navText}>Progress</Text>
-          </View>
-          <View style={styles.navItem}>
+            <Text
+              style={[
+                styles.navText,
+                {
+                  color:
+                    activeTab === "progress"
+                      ? "#2bee9d"
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              Progress
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setActiveTab("profile")}
+          >
             <MaterialIcons
               name="person"
               size={24}
-              color={themeColors.textSecondary}
+              color={
+                activeTab === "profile" ? "#2bee9d" : themeColors.textSecondary
+              }
             />
-            <Text style={styles.navText}>Profile</Text>
-          </View>
+            <Text
+              style={[
+                styles.navText,
+                {
+                  color:
+                    activeTab === "profile"
+                      ? "#2bee9d"
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              Profile
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
