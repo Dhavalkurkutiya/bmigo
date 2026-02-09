@@ -450,6 +450,8 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 4, // Add gap for when it wraps
                 }}
               >
                 <Text style={styles.label}>WEIGHT</Text>
@@ -981,7 +983,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     borderRadius: 24,
-    padding: 24,
+    padding: 16,
     borderWidth: 1,
     borderColor: "#f1f5f9",
   },
@@ -1092,12 +1094,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#ebeef2", // Slightly darker than #f1f5f9
     borderRadius: 8,
     padding: 2,
-    marginLeft: 10,
+    marginLeft: 6,
     borderWidth: 1,
     borderColor: "#e2e8f0",
   },
   unitToggleButton: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     paddingVertical: 4,
     borderRadius: 6,
   },
@@ -1110,7 +1112,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   unitText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: "#94a3b8",
   },

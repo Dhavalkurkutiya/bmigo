@@ -18,16 +18,11 @@ export default function HomeScreen() {
   const [bmiData, setBmiData] = useState<BMIInputData | null>(null);
 
   useEffect(() => {
-    // Hide native splash screen once the custom splash is mounted
-    const hideNativeSplash = async () => {
-      try {
-        await ExpoSplashScreen.hideAsync();
-      } catch (e) {
-        console.warn("Error hiding splash screen:", e);
-      }
-    };
-
-    hideNativeSplash();
+    // Hide native splash screen immediately when the custom splash is mounted
+    // This allows the custom splash to be seen as the "first" screen
+    ExpoSplashScreen.hideAsync().catch((e) => {
+      console.warn("Error hiding splash screen:", e);
+    });
   }, []);
 
   useEffect(() => {
