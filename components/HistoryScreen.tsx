@@ -3,12 +3,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   Dimensions,
+  FlatList,
   Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   useColorScheme,
@@ -19,10 +22,60 @@ import Svg, {
   LinearGradient,
   Path,
   Stop,
+  Text as SvgText,
 } from "react-native-svg";
 
 export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
   const { history, getRecentTrends } = useHistory();
+
+  // Pagination State
+  const [page, setPage] = React.useState(1);
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [isSearching, setIsSearching] = React.useState(false);
+  const ITEMS_PER_PAGE = 20;
+
+  const displayedHistory = React.useMemo(() => {
+    let filtered = history;
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = history.filter(
+        (item) =>
+          item.date.includes(query) ||
+          item.bmi.toString().includes(query) ||
+          item.status.toLowerCase().includes(query),
+      );
+    }
+    return filtered.slice(0, page * ITEMS_PER_PAGE);
+  }, [history, page, searchQuery]);
+
+  const handleLoadMore = () => {
+    // If searching, show all results (or handle pagination for search results if desired, effectively infinite scroll on filtered list)
+    const totalFilteredLength = searchQuery.trim()
+      ? history.filter((item) => {
+          const query = searchQuery.toLowerCase();
+          return (
+            item.date.includes(query) ||
+            item.bmi.toString().includes(query) ||
+            item.status.toLowerCase().includes(query)
+          );
+        }).length
+      : history.length;
+
+    if (isLoadingMore || displayedHistory.length >= totalFilteredLength) return;
+
+    setIsLoadingMore(true);
+    // Simulate network delay
+    setTimeout(() => {
+      setPage((prev) => prev + 1);
+      setIsLoadingMore(false);
+    }, 500); // 0.5s delay
+  };
+
+  // Reset pagination when history changes or search query changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [history.length, searchQuery]);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -72,255 +125,433 @@ export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
           styles.header,
           {
             backgroundColor: themeColors.background,
-            borderBottomColor: themeColors.cardBorder,
+            // borderBottomColor: themeColors.cardBorder, // Removed per request
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => (onBack ? onBack() : router.back())}
-          style={styles.headerButton}
-        >
-          <MaterialIcons
-            name="arrow-back-ios"
-            size={20}
-            color={themeColors.textSecondary}
-          />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>
-          History
-        </Text>
-        <TouchableOpacity style={styles.headerButton}>
-          <MaterialIcons
-            name="search"
-            size={24}
-            color={themeColors.textSecondary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* BMI Trend Analysis Graph Card */}
-        <View
-          style={[
-            styles.graphCard,
-            { backgroundColor: themeColors.graphCardBg },
-          ]}
-        >
-          <View style={styles.graphHeader}>
-            <View>
-              <Text style={styles.graphTitle}>BMI TREND ANALYSIS</Text>
-              <View
-                style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}
-              >
-                <Text style={styles.graphBigValue}>
-                  {trends.avgBmi > 0 ? trends.avgBmi : "--"}
-                </Text>
-                <Text style={styles.graphChangeText}>
-                  {trends.weightChange > 0 ? "+" : ""}
-                  {trends.weightChange} avg
-                </Text>
-              </View>
-            </View>
-            <View style={{ flexDirection: "row", gap: 4 }}>
-              <View
-                style={[
-                  styles.pulseDot,
-                  { backgroundColor: themeColors.primary, opacity: 0.2 },
-                ]}
-              />
-              <View
-                style={[
-                  styles.activeDot,
-                  { backgroundColor: themeColors.primary },
-                ]}
-              />
-            </View>
-          </View>
-
-          {/* Graph Container */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 24 }}
+        {isSearching ? (
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: 16,
+              backgroundColor: themeColors.cardBg,
+              borderRadius: 8,
+              paddingHorizontal: 8,
+            }}
           >
-            <View
-              style={{
-                height: 160,
-                width: Math.max(
-                  Dimensions.get("window").width - 80,
-                  history.length * 60,
-                ),
+            <TextInput
+              style={{ flex: 1, height: 40, color: themeColors.textPrimary }}
+              placeholder="Search date, bmi..."
+              placeholderTextColor={themeColors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+            />
+            <TouchableOpacity
+              onPress={() => {
+                setIsSearching(false);
+                setSearchQuery("");
               }}
             >
-              {/* Grid Lines */}
-              <View style={styles.gridContainer}>
-                {[1, 2, 3, 4].map((i) => (
-                  <View key={i} style={styles.gridLine} />
-                ))}
-              </View>
+              <MaterialIcons
+                name="close"
+                size={20}
+                color={themeColors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={() => (onBack ? onBack() : router.back())}
+              style={styles.headerButton}
+            >
+              <MaterialIcons
+                name="arrow-back-ios"
+                size={20}
+                color={themeColors.textSecondary}
+              />
+            </TouchableOpacity>
+            <Text
+              style={[styles.headerTitle, { color: themeColors.textPrimary }]}
+            >
+              History
+            </Text>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => setIsSearching(true)}
+            >
+              <MaterialIcons
+                name="search"
+                size={24}
+                color={themeColors.textSecondary}
+              />
+            </TouchableOpacity>
+          </>
+        )}
+        {/* Developer Test Button */}
+      </View>
 
-              {history.length > 1 ? (
-                <Svg style={StyleSheet.absoluteFill}>
-                  <Defs>
-                    <LinearGradient
-                      id="lineGradient"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <Stop
-                        offset="0"
-                        stopColor={themeColors.primary}
-                        stopOpacity="0.8"
-                      />
-                      <Stop
-                        offset="1"
-                        stopColor={themeColors.primary}
-                        stopOpacity="0.4"
-                      />
-                    </LinearGradient>
-                  </Defs>
-                  {/* Simple Path Logic: Normalize BMI to height */}
-                  {(() => {
-                    const maxBMI = Math.max(...history.map((h) => h.bmi), 30);
-                    const minBMI = Math.min(...history.map((h) => h.bmi), 15);
-                    const range = maxBMI - minBMI || 1;
-                    const height = 120; // available svg height
-                    const widthStep = 60;
-
-                    let d = `M 10 ${height - ((history[0].bmi - minBMI) / range) * height}`;
-                    history.forEach((h, i) => {
-                      if (i === 0) return;
-                      const x = 10 + i * widthStep;
-                      const y = height - ((h.bmi - minBMI) / range) * height;
-                      d += ` L ${x} ${y}`;
-                    });
-
-                    return (
-                      <>
-                        <Path
-                          d={d}
-                          stroke="url(#lineGradient)"
-                          strokeWidth={3}
-                          fill="none"
-                        />
-                        {history.map((h, i) => {
-                          const x = 10 + i * widthStep;
-                          const y =
-                            height - ((h.bmi - minBMI) / range) * height;
-                          return (
-                            <Circle
-                              key={h.id}
-                              cx={x}
-                              cy={y}
-                              r={4}
-                              fill={themeColors.primary}
-                            />
-                          );
-                        })}
-                      </>
-                    );
-                  })()}
-                </Svg>
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ color: "#64748b", fontSize: 12 }}>
-                    Add more records to see trend
-                  </Text>
-                </View>
-              )}
+      <FlatList
+        style={{ flex: 1 }}
+        data={displayedHistory}
+        extraData={[trends, isLoadingMore]}
+        keyExtractor={(item) => item.id}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={{ paddingVertical: 20 }}>
+              <ActivityIndicator
+                size="small"
+                color={themeColors.textSecondary}
+              />
             </View>
-          </ScrollView>
-        </View>
-
-        {/* Timeline History List */}
-        <View style={styles.timelineContainer}>
-          <View
-            style={[
-              styles.timelineLine,
-              { backgroundColor: isDark ? "#2E3032" : "#f1f5f9" },
-            ]}
-          />
-
-          {history.map((item, index) => (
-            <View key={item.id} style={styles.timelineItem}>
-              <View
-                style={[
-                  styles.timelineDotBg,
-                  { backgroundColor: themeColors.cardBg },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.timelineDot,
-                    {
-                      backgroundColor:
-                        index === 0
-                          ? themeColors.primary
-                          : isDark
-                            ? "#2E3032"
-                            : "#e2e8f0",
-                      borderColor: themeColors.cardBg,
-                    },
-                  ]}
-                />
-              </View>
-
-              <View style={styles.timelineContent}>
+          ) : (
+            <View style={{ height: 20 }} />
+          )
+        }
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {/* BMI Trend Analysis Graph Card */}
+            <View
+              style={[
+                styles.graphCard,
+                { backgroundColor: themeColors.graphCardBg },
+              ]}
+            >
+              <View style={styles.graphHeader}>
                 <View>
-                  <Text style={styles.timelineDate}>
-                    {formatDate(item.date)}
-                  </Text>
                   <Text
                     style={[
-                      styles.timelineBmi,
-                      { color: themeColors.textPrimary },
-                    ]}
-                  >
-                    {item.bmi.toFixed(1)} BMI
-                  </Text>
-                </View>
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text
-                    style={[
-                      styles.timelineWeight,
+                      styles.graphTitle,
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    {item.weight} kg
+                    BMI TREND ANALYSIS
                   </Text>
                   <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(item.status) + "20" },
-                    ]}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      gap: 8,
+                    }}
                   >
                     <Text
                       style={[
-                        styles.statusBadgeText,
-                        { color: getStatusColor(item.status) },
+                        styles.graphBigValue,
+                        { color: themeColors.textPrimary },
                       ]}
                     >
-                      {item.status || "Normal"}
+                      {trends.avgBmi > 0 ? trends.avgBmi : "--"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.graphChangeText,
+                        { color: themeColors.primary },
+                      ]}
+                    >
+                      {trends.weightChange > 0 ? "+" : ""}
+                      {trends.weightChange} avg
                     </Text>
                   </View>
                 </View>
+                <View style={{ flexDirection: "row", gap: 4 }}>
+                  <View
+                    style={[
+                      styles.pulseDot,
+                      { backgroundColor: themeColors.primary, opacity: 0.2 },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.activeDot,
+                      { backgroundColor: themeColors.primary },
+                    ]}
+                  />
+                </View>
+              </View>
+
+              {/* Graph Container */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingRight: 24 }}
+              >
+                <View
+                  style={{
+                    height: 200, // Increased height for labels
+                    width: Math.max(
+                      Dimensions.get("window").width - 80,
+                      history.length * 60 + 40, // Match widthStep (60) + padding
+                    ),
+                  }}
+                >
+                  {/* Grid Lines */}
+                  <View style={styles.gridContainer}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <View
+                        key={i}
+                        style={[
+                          styles.gridLine,
+                          { borderColor: themeColors.textPrimary },
+                        ]}
+                      />
+                    ))}
+                  </View>
+
+                  {history.length > 1 ? (
+                    <Svg style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient
+                          id="lineGradient"
+                          x1="0"
+                          y1="0"
+                          x2="1"
+                          y2="0"
+                        >
+                          <Stop
+                            offset="0"
+                            stopColor={themeColors.primary}
+                            stopOpacity="0.8"
+                          />
+                          <Stop
+                            offset="1"
+                            stopColor={themeColors.primary}
+                            stopOpacity="0.4"
+                          />
+                        </LinearGradient>
+                      </Defs>
+                      {/* Smooth Path Logic */}
+                      {(() => {
+                        // Limit graph points for performance if history is huge
+                        const graphData = history.slice(0, 50).reverse(); // Show last 50 points
+
+                        // Ensure range includes standard reference points
+                        const maxBMI = Math.max(
+                          ...graphData.map((h) => h.bmi),
+                          30,
+                        );
+                        const minBMI = Math.min(
+                          ...graphData.map((h) => h.bmi),
+                          15,
+                        );
+                        const range = maxBMI - minBMI || 1;
+                        const height = 140; // available svg height for line
+                        const widthStep = 60;
+                        const startX = 10;
+
+                        // Calculate Y for a given BMI
+                        const getY = (bmi: number) =>
+                          height - ((bmi - minBMI) / range) * height;
+
+                        // Calculate points
+                        const points = graphData.map((h, i) => ({
+                          x: startX + i * widthStep,
+                          y: getY(h.bmi),
+                          date: new Date(h.date),
+                          bmi: h.bmi,
+                        }));
+
+                        // Generate Smooth Path (Catmull-Rom or simple Bezier)
+                        // Simplified smoothing: control points based on previous and next points
+                        const line = (pointA: any, pointB: any) => {
+                          const lengthX = pointB.x - pointA.x;
+                          const lengthY = pointB.y - pointA.y;
+                          return {
+                            length: Math.sqrt(
+                              Math.pow(lengthX, 2) + Math.pow(lengthY, 2),
+                            ),
+                            angle: Math.atan2(lengthY, lengthX),
+                          };
+                        };
+
+                        const controlPoint = (
+                          current: any,
+                          previous: any,
+                          next: any,
+                          reverse?: boolean,
+                        ) => {
+                          const p = previous || current;
+                          const n = next || current;
+                          const smoothing = 0.2;
+                          const o = line(p, n);
+                          const angle = o.angle + (reverse ? Math.PI : 0);
+                          const length = o.length * smoothing;
+                          const x = current.x + Math.cos(angle) * length;
+                          const y = current.y + Math.sin(angle) * length;
+                          return { x, y };
+                        };
+
+                        const bezierCommand = (
+                          point: any,
+                          i: number,
+                          a: any[],
+                        ) => {
+                          const cps = controlPoint(a[i - 1], a[i - 2], point);
+                          const cpe = controlPoint(
+                            point,
+                            a[i - 1],
+                            a[i + 1],
+                            true,
+                          );
+                          return `C ${cps.x},${cps.y} ${cpe.x},${cpe.y} ${point.x},${point.y}`;
+                        };
+
+                        let d = `M ${points[0].x} ${points[0].y}`;
+                        for (let i = 1; i < points.length; i++) {
+                          d += " " + bezierCommand(points[i], i, points);
+                        }
+
+                        return (
+                          <>
+                            <Path
+                              d={d}
+                              stroke="url(#lineGradient)"
+                              strokeWidth={3}
+                              fill="none"
+                            />
+                            {points.map((p, i) => (
+                              <React.Fragment key={i}>
+                                <Circle
+                                  cx={p.x}
+                                  cy={p.y}
+                                  r={4}
+                                  fill={themeColors.primary}
+                                />
+                                {/* BMI Value Label */}
+                                <SvgText
+                                  x={p.x}
+                                  y={p.y - 12}
+                                  fill={themeColors.textPrimary}
+                                  fontSize="10"
+                                  fontWeight="bold"
+                                  textAnchor="middle"
+                                >
+                                  {p.bmi.toFixed(1)}
+                                </SvgText>
+                                {/* Month Label (show only if different month/year or first) */}
+                                {(i === 0 ||
+                                  p.date.getMonth() !==
+                                    points[i - 1].date.getMonth() ||
+                                  p.date.getFullYear() !==
+                                    points[i - 1].date.getFullYear()) && (
+                                  <SvgText
+                                    x={p.x}
+                                    y={height + 25}
+                                    fill="#94a3b8"
+                                    fontSize="10"
+                                    fontWeight="bold"
+                                    textAnchor="middle"
+                                  >
+                                    {p.date.toLocaleDateString("en-US", {
+                                      month: "short",
+                                      year: "2-digit",
+                                    })}
+                                  </SvgText>
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </Svg>
+                  ) : (
+                    <View
+                      style={{
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ color: "#64748b", fontSize: 12 }}>
+                        Add more records to see trend
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
+            <View style={{ height: 20 }} />
+          </>
+        }
+        renderItem={({ item, index }) => (
+          <View style={styles.timelineItem}>
+            {/* Continuous Line Segment */}
+            <View
+              style={[
+                styles.timelineLineSegment,
+                { backgroundColor: isDark ? "#2E3032" : "#f1f5f9" },
+              ]}
+            />
+
+            <View
+              style={[
+                styles.timelineDotBg,
+                { backgroundColor: themeColors.cardBg },
+              ]}
+            >
+              <View
+                style={[
+                  styles.timelineDot,
+                  {
+                    backgroundColor:
+                      index === 0
+                        ? themeColors.primary
+                        : isDark
+                          ? "#2E3032"
+                          : "#e2e8f0",
+                    borderColor: themeColors.cardBg,
+                  },
+                ]}
+              />
+            </View>
+
+            <View style={styles.timelineContent}>
+              <View>
+                <Text style={styles.timelineDate}>{formatDate(item.date)}</Text>
+                <Text
+                  style={[
+                    styles.timelineBmi,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {item.bmi.toFixed(1)} BMI
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={[
+                    styles.timelineWeight,
+                    { color: themeColors.textSecondary },
+                  ]}
+                >
+                  {item.weight} kg
+                </Text>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: getStatusColor(item.status) + "20" },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusBadgeText,
+                      { color: getStatusColor(item.status) },
+                    ]}
+                  >
+                    {item.status || "Normal"}
+                  </Text>
+                </View>
               </View>
             </View>
-          ))}
-        </View>
-
-        {history.length === 0 && (
+          </View>
+        )}
+        ListEmptyComponent={
           <View style={styles.emptyState}>
             <MaterialIcons
               name="history"
@@ -337,15 +568,7 @@ export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
               No history yet. Calculate your BMI first!
             </Text>
           </View>
-        )}
-      </ScrollView>
-
-      {/* Decorative Bottom Bar */}
-      <View
-        style={[
-          styles.bottomIndicator,
-          { backgroundColor: isDark ? "#2E3032" : "#e2e8f0" },
-        ]}
+        }
       />
     </View>
   );
@@ -367,8 +590,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
   },
   headerTitle: {
     fontSize: 18,
@@ -387,11 +608,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     marginBottom: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 5,
   },
   graphHeader: {
     flexDirection: "row",
@@ -408,7 +624,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   graphBigValue: {
-    color: "#fff",
     fontSize: 30,
     fontWeight: "800",
   },
@@ -436,41 +651,42 @@ const styles = StyleSheet.create({
   },
   gridLine: {
     borderTopWidth: 1,
-    borderColor: "#fff",
     width: "100%",
   },
   timelineContainer: {
     paddingHorizontal: 8,
-    position: "relative",
+    // position: "relative", // Removed relative positioning as it's not needed for FlatList items
   },
-  timelineLine: {
+  timelineLineSegment: {
     position: "absolute",
-    left: 27, // Center of dot (19px left + center)
+    left: 11, // Center of dot (24/2 = 12, -1 for line width)
     top: 0,
     bottom: 0,
     width: 2,
   },
   timelineItem: {
-    paddingLeft: 40,
-    marginBottom: 32,
+    paddingLeft: 32,
+    marginBottom: 0,
+    paddingBottom: 24,
     position: "relative",
   },
   timelineDotBg: {
     position: "absolute",
     left: 0,
-    top: 2,
-    width: 40,
-    height: 40,
+    top: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
   },
   timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     borderWidth: 2,
-    borderColor: "transparent", // Fixed border color issue
+    borderColor: "transparent",
   },
   timelineContent: {
     flexDirection: "row",

@@ -18,23 +18,63 @@ export function useHistory() {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load history on mount
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
+  const populateDummyData = async () => {
     try {
-      const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
-      if (jsonValue != null) {
-        setHistory(JSON.parse(jsonValue));
+      const dummyData: HistoryRecord[] = [];
+
+      for (let i = 0; i < 500; i++) {
+        const bmi = 16 + Math.random() * 20; // 16 to 36
+        const status =
+          bmi < 18.5
+            ? "Underweight"
+            : bmi < 25
+              ? "Normal"
+              : bmi < 30
+                ? "Overweight"
+                : "Obese";
+
+        dummyData.push({
+          id: Date.now().toString() + i,
+          date: new Date(Date.now() - i * 86400000).toISOString(), // Subtract days
+          bmi: parseFloat(bmi.toFixed(1)),
+          weight: Math.floor(50 + Math.random() * 50),
+          height: 175,
+          mode: "standard",
+          status: status,
+          unit: "metric", // Always stored as metric
+        });
       }
+
+      setHistory(dummyData);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dummyData));
     } catch (e) {
-      console.error("Failed to load history", e);
-    } finally {
-      setLoading(false);
+      console.error("Failed to populate dummy data", e);
     }
   };
+
+  // Load history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+        if (jsonValue != null) {
+          const parsed = JSON.parse(jsonValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHistory(parsed);
+          } else {
+            await populateDummyData();
+          }
+        } else {
+          await populateDummyData();
+        }
+      } catch (e) {
+        console.error("Failed to load history", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadHistory();
+  }, []);
 
   const addRecord = async (record: Omit<HistoryRecord, "id" | "date">) => {
     try {
@@ -87,5 +127,6 @@ export function useHistory() {
     addRecord,
     clearHistory,
     getRecentTrends,
+    populateDummyData,
   };
 }
