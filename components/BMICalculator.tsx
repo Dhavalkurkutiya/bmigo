@@ -1,4 +1,5 @@
 import ComingSoon from "@/components/ComingSoon";
+import HistoryScreen from "@/components/HistoryScreen";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
@@ -699,6 +700,8 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
           </TouchableOpacity>
         </ScrollView>
+      ) : activeTab === "history" ? (
+        <HistoryScreen onBack={() => setActiveTab("calculator")} />
       ) : (
         <ComingSoon />
       )}

@@ -1,4 +1,5 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useHistory } from "@/hooks/useHistory";
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -17,6 +18,7 @@ interface BMIResultProps {
 }
 
 export default function BMIResult({ data, onReset }: BMIResultProps) {
+  const { addRecord } = useHistory();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -144,6 +146,23 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
   const targetCarbs = Math.round((remainingCalories * carbSplit) / 4);
   const targetFats = Math.round((remainingCalories * fatSplit) / 9);
   // --- NUTRITION ALGORITHM END ---
+
+  // Save to History on Mount
+  React.useEffect(() => {
+    addRecord({
+      bmi,
+      weight: data.weight,
+      height: data.height,
+      mode: data.isAthleteMode
+        ? "athlete"
+        : data.isIndianMode
+          ? "indian"
+          : "standard",
+      status: status as any, // "Normal" | "Overweight" etc needs casting or matching exact strings
+      unit: "metric",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once when result is shown
 
   return (
     <SafeAreaView
