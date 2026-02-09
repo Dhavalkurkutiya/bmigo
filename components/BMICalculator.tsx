@@ -5,6 +5,7 @@ import Slider from "@react-native-community/slider";
 
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -36,6 +37,14 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
   const [isIndianMode, setIsIndianMode] = useState(false);
   const [isAthleteMode, setIsAthleteMode] = useState(false);
 
+  // New State for Unit Conversion
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">("kg");
+  const [heightFt, setHeightFt] = useState("5");
+  const [heightIn, setHeightIn] = useState("9");
+  // Keep height state for CM value, update when unit is CM
+  // Keep weight state as raw input value
+
   const [activeTab, setActiveTab] = useState<
     "calculator" | "history" | "progress" | "profile"
   >("calculator");
@@ -63,6 +72,59 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
     };
   }, []);
 
+  const handleCalculate = () => {
+    // 1. Validate Inputs
+    // Age Validation
+    if (age < 10 || age > 100) {
+      Alert.alert("Invalid Age", "Please enter an age between 10 and 100.");
+      return;
+    }
+
+    // Height Validation & Normalization
+    let finalHeightCm = 0;
+    if (heightUnit === "cm") {
+      finalHeightCm = height;
+    } else {
+      const ft = parseFloat(heightFt || "0");
+      const inch = parseFloat(heightIn || "0");
+      finalHeightCm = ft * 30.48 + inch * 2.54;
+    }
+
+    if (finalHeightCm < 50 || finalHeightCm > 250) {
+      Alert.alert(
+        "Invalid Height",
+        "Height must be between 50cm (approx 1ft 8in) and 250cm (approx 8ft 2in).",
+      );
+      return;
+    }
+
+    // Weight Validation & Normalization
+    let finalWeightKg = 0;
+    if (weightUnit === "kg") {
+      finalWeightKg = weight;
+    } else {
+      finalWeightKg = weight / 2.20462;
+    }
+
+    if (finalWeightKg < 20 || finalWeightKg > 300) {
+      Alert.alert(
+        "Invalid Weight",
+        "Weight must be between 20kg (44lbs) and 300kg (660lbs).",
+      );
+      return;
+    }
+
+    // 2. Proceed if Valid
+    onCalculate({
+      gender,
+      height: finalHeightCm,
+      weight: finalWeightKg,
+      age,
+      isIndianMode,
+      isAthleteMode,
+    });
+  };
+
   const themeColors = {
     // ... same theme colors
     background: isDark ? "#151718" : "#f6f8f7",
@@ -73,6 +135,8 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
     iconBg: isDark ? "#2E3032" : "#fff",
     genderBg: isDark ? "#2E3032" : "#f1f5f9",
     primary: "#2bee9d",
+    toggleBg: isDark ? "#101213" : "#ebeef2",
+    toggleActiveBg: isDark ? "#2C3032" : "#fff",
   };
 
   return (
@@ -184,7 +248,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             </View>
           </View>
 
-          {/* Height Slider */}
+          {/* Height Section */}
           <View
             style={[
               styles.card,
@@ -195,8 +259,71 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             ]}
           >
             <View style={styles.cardHeader}>
-              <View>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
                 <Text style={styles.label}>HEIGHT</Text>
+                {/* Unit Switch */}
+                <View
+                  style={[
+                    styles.unitToggleContainer,
+                    {
+                      backgroundColor: themeColors.toggleBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => setHeightUnit("cm")}
+                    style={[
+                      styles.unitToggleButton,
+                      heightUnit === "cm" && [
+                        styles.unitToggleButtonActive,
+                        { backgroundColor: themeColors.toggleActiveBg },
+                      ],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.unitText,
+                        heightUnit === "cm" && [
+                          styles.unitTextActive,
+                          { color: themeColors.textPrimary },
+                        ],
+                      ]}
+                    >
+                      CM
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setHeightUnit("ft")}
+                    style={[
+                      styles.unitToggleButton,
+                      heightUnit === "ft" && [
+                        styles.unitToggleButtonActive,
+                        { backgroundColor: themeColors.toggleActiveBg },
+                      ],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.unitText,
+                        heightUnit === "ft" && [
+                          styles.unitTextActive,
+                          { color: themeColors.textPrimary },
+                        ],
+                      ]}
+                    >
+                      FT
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <MaterialIcons name="height" size={32} color="#2bee9d" />
+            </View>
+
+            {heightUnit === "cm" ? (
+              <>
                 <View style={styles.heightValueContainer}>
                   <TextInput
                     style={[
@@ -217,57 +344,93 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                   />
                   <Text style={styles.unit}>cm</Text>
                 </View>
-              </View>
-              <MaterialIcons name="height" size={32} color="#2bee9d" />
-            </View>
 
-            <View style={styles.sliderContainer}>
-              <Slider
-                style={{ width: "100%", height: 40 }}
-                minimumValue={100}
-                maximumValue={250}
-                step={1}
-                value={height}
-                onValueChange={setHeight}
-                minimumTrackTintColor="#2bee9d"
-                maximumTrackTintColor={isDark ? "#2E3032" : "#e2e8f0"}
-                thumbTintColor="#2bee9d"
-              />
-            </View>
-            <View style={styles.sliderLabels}>
-              <TouchableOpacity
-                onPress={() => setHeight(Math.max(100, height - 1))}
-                style={[
-                  styles.counterButton,
-                  {
-                    backgroundColor: themeColors.cardBg,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-              >
-                <MaterialIcons
-                  name="remove"
-                  size={20}
-                  color={themeColors.textPrimary}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setHeight(Math.min(250, height + 1))}
-                style={[
-                  styles.counterButton,
-                  {
-                    backgroundColor: themeColors.cardBg,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-              >
-                <MaterialIcons
-                  name="add"
-                  size={20}
-                  color={themeColors.textPrimary}
-                />
-              </TouchableOpacity>
-            </View>
+                <View style={styles.sliderContainer}>
+                  <Slider
+                    style={{ width: "100%", height: 40 }}
+                    minimumValue={50}
+                    maximumValue={250}
+                    step={1}
+                    value={height}
+                    onValueChange={setHeight}
+                    minimumTrackTintColor="#2bee9d"
+                    maximumTrackTintColor={isDark ? "#2E3032" : "#e2e8f0"}
+                    thumbTintColor="#2bee9d"
+                  />
+                </View>
+                <View style={styles.sliderLabels}>
+                  <TouchableOpacity
+                    onPress={() => setHeight(Math.max(50, height - 1))}
+                    style={[
+                      styles.counterButton,
+                      {
+                        backgroundColor: themeColors.cardBg,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="remove"
+                      size={20}
+                      color={themeColors.textPrimary}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setHeight(Math.min(250, height + 1))}
+                    style={[
+                      styles.counterButton,
+                      {
+                        backgroundColor: themeColors.cardBg,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="add"
+                      size={20}
+                      color={themeColors.textPrimary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <View style={styles.ftContainer}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>FEET</Text>
+                  <TextInput
+                    style={[
+                      styles.largeValue,
+                      {
+                        color: themeColors.textPrimary,
+                        borderBottomWidth: 1,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                    value={heightFt}
+                    onChangeText={setHeightFt}
+                    keyboardType="numeric"
+                    maxLength={1}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.subLabel}>INCHES</Text>
+                  <TextInput
+                    style={[
+                      styles.largeValue,
+                      {
+                        color: themeColors.textPrimary,
+                        borderBottomWidth: 1,
+                        borderColor: themeColors.border,
+                      },
+                    ]}
+                    value={heightIn}
+                    onChangeText={setHeightIn}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Weight & Age */}
@@ -281,12 +444,76 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                 },
               ]}
             >
-              <Text style={styles.label}>WEIGHT (KG)</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={styles.label}>WEIGHT</Text>
+                <View
+                  style={[
+                    styles.unitToggleContainer,
+                    {
+                      backgroundColor: themeColors.toggleBg,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => setWeightUnit("kg")}
+                    style={[
+                      styles.unitToggleButton,
+                      weightUnit === "kg" && [
+                        styles.unitToggleButtonActive,
+                        { backgroundColor: themeColors.toggleActiveBg },
+                      ],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.unitText,
+                        weightUnit === "kg" && [
+                          styles.unitTextActive,
+                          { color: themeColors.textPrimary },
+                        ],
+                      ]}
+                    >
+                      KG
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setWeightUnit("lbs")}
+                    style={[
+                      styles.unitToggleButton,
+                      weightUnit === "lbs" && [
+                        styles.unitToggleButtonActive,
+                        { backgroundColor: themeColors.toggleActiveBg },
+                      ],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.unitText,
+                        weightUnit === "lbs" && [
+                          styles.unitTextActive,
+                          { color: themeColors.textPrimary },
+                        ],
+                      ]}
+                    >
+                      LBS
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TextInput
                 style={[styles.inputLarge, { color: themeColors.textPrimary }]}
                 value={weight.toString()}
                 onChangeText={(t) => setWeight(Number(t) || 0)}
                 keyboardType="numeric"
+                placeholder={weightUnit === "kg" ? "KG" : "LBS"}
                 placeholderTextColor={themeColors.textSecondary}
               />
               <View style={styles.counterRow}>
@@ -466,16 +693,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
 
           <TouchableOpacity
             style={styles.calculateButton}
-            onPress={() =>
-              onCalculate({
-                gender,
-                height,
-                weight,
-                age,
-                isIndianMode,
-                isAthleteMode,
-              })
-            }
+            onPress={handleCalculate}
           >
             <Text style={styles.calculateButtonText}>Calculate BMI</Text>
             <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
@@ -863,5 +1081,51 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#94a3b8",
     textTransform: "uppercase",
+  },
+
+  // New Styles for Unit Toggles
+  unitToggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#ebeef2", // Slightly darker than #f1f5f9
+    borderRadius: 8,
+    padding: 2,
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  unitToggleButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  unitToggleButtonActive: {
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  unitText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#94a3b8",
+  },
+  unitTextActive: {
+    color: "#0d1b16",
+    fontWeight: "bold",
+  },
+  ftContainer: {
+    flexDirection: "row",
+    gap: 20,
+    marginTop: 10,
+    paddingHorizontal: 10,
+  },
+  subLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#94a3b8",
+    marginBottom: 4,
+    letterSpacing: 1,
   },
 });
