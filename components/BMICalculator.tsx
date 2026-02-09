@@ -65,13 +65,13 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
 
   const themeColors = {
     // ... same theme colors
-    background: isDark ? "#0d1b16" : "#f6f8f7",
-    cardBg: isDark ? "#162621" : "#fff",
+    background: isDark ? "#151718" : "#f6f8f7",
+    cardBg: isDark ? "#202325" : "#fff",
     textPrimary: isDark ? "#ffffff" : "#0d1b16",
     textSecondary: isDark ? "#94a3b8" : "#64748b",
-    border: isDark ? "#2a3c34" : "#f1f5f9",
-    iconBg: isDark ? "#2a3c34" : "#fff",
-    genderBg: isDark ? "#2a3c34" : "#f1f5f9",
+    border: isDark ? "#2E3032" : "#f1f5f9",
+    iconBg: isDark ? "#2E3032" : "#fff",
+    genderBg: isDark ? "#2E3032" : "#f1f5f9",
     primary: "#2bee9d",
   };
 
@@ -230,7 +230,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                 value={height}
                 onValueChange={setHeight}
                 minimumTrackTintColor="#2bee9d"
-                maximumTrackTintColor={isDark ? "#2a3c34" : "#e2e8f0"}
+                maximumTrackTintColor={isDark ? "#2E3032" : "#e2e8f0"}
                 thumbTintColor="#2bee9d"
               />
             </View>
@@ -413,7 +413,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
               value={isIndianMode}
               onValueChange={setIsIndianMode}
               trackColor={{
-                false: isDark ? "#2a3c34" : "#e2e8f0",
+                false: isDark ? "#2E3032" : "#e2e8f0",
                 true: "#2bee9d",
               }}
               thumbColor={"#fff"}
@@ -457,7 +457,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
               value={isAthleteMode}
               onValueChange={setIsAthleteMode}
               trackColor={{
-                false: isDark ? "#2a3c34" : "#e2e8f0",
+                false: isDark ? "#2E3032" : "#e2e8f0",
                 true: "#2bee9d",
               }}
               thumbColor={"#fff"}

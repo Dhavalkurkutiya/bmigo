@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "BMI GO",
+    "name": "BMI Go",
     "slug": "bmigo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -33,9 +33,6 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 1,
-          "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
             "backgroundColor": "#0f172a"

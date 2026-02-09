@@ -16,7 +16,7 @@ const COLORS = {
   primary: "#00E68E",
   secondary: "#38bdf8",
   backgroundLight: "#ffffff",
-  backgroundDark: "#0a110e",
+  backgroundDark: "#151718",
   darkGrey: "#334155",
   slate100: "#f1f5f9",
   slate200: "#e2e8f0",

@@ -22,7 +22,7 @@ const COLORS = {
   primary: "#00ff9d",
   secondary: "#0ea5e9", // More vibrant sky blue
   backgroundLight: "#ffffff",
-  backgroundDark: "#0f172a", // Updated dark background
+  backgroundDark: "#151718", // Updated dark background
   textDark: "#0c1d16", // Kept for light mode text
   textLight: "#ffffff",
   slate400: "#94a3b8",

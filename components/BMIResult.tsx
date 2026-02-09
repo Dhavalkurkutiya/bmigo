@@ -21,12 +21,12 @@ export default function BMIResult({ data, onReset }: BMIResultProps) {
   const isDark = colorScheme === "dark";
 
   const themeColors = {
-    background: isDark ? "#0d1b16" : "#fff",
-    cardBg: isDark ? "#162621" : "#fff",
+    background: isDark ? "#151718" : "#fff",
+    cardBg: isDark ? "#202325" : "#fff",
     textPrimary: isDark ? "#ffffff" : "#0d1b16",
     textSecondary: isDark ? "#94a3b8" : "#64748b",
-    border: isDark ? "#2a3c34" : "#f1f5f9",
-    iconBg: isDark ? "#2a3c34" : "#fff",
+    border: isDark ? "#2E3032" : "#f1f5f9",
+    iconBg: isDark ? "#2E3032" : "#fff",
   };
   // Simple BMI Logic
   const heightM = data.height / 100;

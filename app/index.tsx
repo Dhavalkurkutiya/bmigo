@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f6f8f7",
   },
   darkContainer: {
-    backgroundColor: "#0d1b16",
+    backgroundColor: "#151718",
   },
   safeArea: {
     flex: 1,
