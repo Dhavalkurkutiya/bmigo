@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 120, // Space for fixed header
     paddingHorizontal: 24,
-    paddingBottom: 32, // Space for bottom nav removed, now full screen
+    paddingBottom: 100, // Increased for bottom nav
   },
   graphCard: {
     // backgroundColor set dynamically now

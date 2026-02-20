@@ -1,5 +1,6 @@
-import ComingSoon from "@/components/ComingSoon";
+import BottomTabBar from "@/components/BottomTabBar";
 import HistoryScreen from "@/components/HistoryScreen";
+import ProfileScreen from "@/components/ProfileScreen";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
@@ -46,9 +47,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
   // Keep height state for CM value, update when unit is CM
   // Keep weight state as raw input value
 
-  const [activeTab, setActiveTab] = useState<
-    "calculator" | "history" | "progress" | "profile"
-  >("calculator");
+  const [activeTab, setActiveTab] = useState<"home" | "stats" | "hub">("home");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -144,7 +143,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
     <View
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      {activeTab === "calculator" ? (
+      {activeTab === "home" ? (
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.contentContainer}
@@ -702,126 +701,15 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
           </TouchableOpacity>
         </ScrollView>
-      ) : activeTab === "history" ? (
-        <HistoryScreen onBack={() => setActiveTab("calculator")} />
-      ) : (
-        <ComingSoon />
-      )}
+      ) : activeTab === "stats" ? (
+        <HistoryScreen onBack={() => setActiveTab("home")} />
+      ) : activeTab === "hub" ? (
+        <ProfileScreen onBack={() => setActiveTab("home")} />
+      ) : null}
 
       {/* Bottom Nav Simulation */}
       {!isKeyboardVisible && (
-        <View
-          style={[
-            styles.bottomNav,
-            {
-              backgroundColor: themeColors.cardBg,
-              borderTopColor: themeColors.border,
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => setActiveTab("calculator")}
-          >
-            <MaterialIcons
-              name="calculate"
-              size={24}
-              color={
-                activeTab === "calculator"
-                  ? "#2bee9d"
-                  : themeColors.textSecondary
-              }
-            />
-            <Text
-              style={[
-                styles.navText,
-                {
-                  color:
-                    activeTab === "calculator"
-                      ? "#2bee9d"
-                      : themeColors.textSecondary,
-                },
-              ]}
-            >
-              Calculator
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => setActiveTab("history")}
-          >
-            <MaterialIcons
-              name="history"
-              size={24}
-              color={
-                activeTab === "history" ? "#2bee9d" : themeColors.textSecondary
-              }
-            />
-            <Text
-              style={[
-                styles.navText,
-                {
-                  color:
-                    activeTab === "history"
-                      ? "#2bee9d"
-                      : themeColors.textSecondary,
-                },
-              ]}
-            >
-              History
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => setActiveTab("progress")}
-          >
-            <MaterialIcons
-              name="analytics"
-              size={24}
-              color={
-                activeTab === "progress" ? "#2bee9d" : themeColors.textSecondary
-              }
-            />
-            <Text
-              style={[
-                styles.navText,
-                {
-                  color:
-                    activeTab === "progress"
-                      ? "#2bee9d"
-                      : themeColors.textSecondary,
-                },
-              ]}
-            >
-              Progress
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => setActiveTab("profile")}
-          >
-            <MaterialIcons
-              name="person"
-              size={24}
-              color={
-                activeTab === "profile" ? "#2bee9d" : themeColors.textSecondary
-              }
-            />
-            <Text
-              style={[
-                styles.navText,
-                {
-                  color:
-                    activeTab === "profile"
-                      ? "#2bee9d"
-                      : themeColors.textSecondary,
-                },
-              ]}
-            >
-              Profile
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <BottomTabBar currentTab={activeTab} onTabPress={setActiveTab} />
       )}
     </View>
   );
