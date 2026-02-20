@@ -1,15 +1,48 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
 const PRIMARY = "#00ff9d";
 const SECONDARY = "#0ea5e9";
-const BACKGROUND_LIGHT = "#f8fafc";
-const TEXT_MAIN = "#0f172a";
-const TEXT_SUB = "#64748b";
+
+// Light Theme Colors
+const LIGHT_BG = "#f8fafc";
+const LIGHT_TEXT_MAIN = "#0f172a";
+const LIGHT_TEXT_SUB = "#64748b";
+const LIGHT_CARD_BG = "white";
+const LIGHT_BORDER = "#f1f5f9";
+
+// Dark Theme Colors
+const DARK_BG = "#151718";
+const DARK_TEXT_MAIN = "#ffffff";
+const DARK_TEXT_SUB = "#94a3b8";
+const DARK_CARD_BG = "#202325";
+const DARK_BORDER = "#2E3032";
+
+// Default Constants (Light Theme) for static styles
+const BACKGROUND_LIGHT = LIGHT_BG;
+const TEXT_MAIN = LIGHT_TEXT_MAIN;
+const TEXT_SUB = LIGHT_TEXT_SUB;
 
 export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  // Dynamic Colors
+  const bgMain = isDark ? DARK_BG : LIGHT_BG;
+  const textMain = isDark ? DARK_TEXT_MAIN : LIGHT_TEXT_MAIN;
+  const textSub = isDark ? DARK_TEXT_SUB : LIGHT_TEXT_SUB;
+  const cardBg = isDark ? DARK_CARD_BG : LIGHT_CARD_BG;
+  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
+
   const CIRCLE_SIZE = 120; // Original was 112px + padding = 128px ish
   const STROKE_WIDTH = 8;
   const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
@@ -19,8 +52,8 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
   const offset = CIRCUMFERENCE - progress * CIRCUMFERENCE;
 
   return (
-    <View style={styles.safeArea}>
-      <View style={styles.container}>
+    <View style={[styles.safeArea, { backgroundColor: bgMain }]}>
+      <View style={[styles.container, { backgroundColor: bgMain }]}>
         {/* Header */}
         {/* <View style={styles.header}>
           <TouchableOpacity
@@ -58,7 +91,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                     cx={CIRCLE_SIZE / 2}
                     cy={CIRCLE_SIZE / 2}
                     r={RADIUS}
-                    stroke="#e2e8f0"
+                    stroke={isDark ? "#334155" : "#e2e8f0"}
                     strokeWidth={STROKE_WIDTH}
                     fill="transparent"
                   />
@@ -87,14 +120,16 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               </View>
 
               {/* Pro Badge */}
-              <View style={styles.proBadge}>
+              <View style={[styles.proBadge, { borderColor: cardBg }]}>
                 <Text style={styles.proText}>PRO</Text>
               </View>
             </View>
 
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>Alex Harrison</Text>
-              <Text style={styles.userMeta}>
+              <Text style={[styles.userName, { color: textMain }]}>
+                Alex Harrison
+              </Text>
+              <Text style={[styles.userMeta, { color: textSub }]}>
                 Joined Oct 2023 • Daily Tracker
               </Text>
             </View>
@@ -103,7 +138,12 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           {/* Stats Grid */}
           <View style={styles.statsGrid}>
             {/* Current BMI Card */}
-            <View style={styles.statCard}>
+            <View
+              style={[
+                styles.statCard,
+                { backgroundColor: cardBg, borderColor },
+              ]}
+            >
               <View style={styles.statHeader}>
                 <View
                   style={[
@@ -117,15 +157,24 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                     color={PRIMARY}
                   />
                 </View>
-                <Text style={styles.statLabel}>CURRENT BMI</Text>
+                <Text style={[styles.statLabel, { color: textSub }]}>
+                  CURRENT BMI
+                </Text>
               </View>
               <View style={styles.statValueRow}>
-                <Text style={styles.statValue}>22.4</Text>
+                <Text style={[styles.statValue, { color: textMain }]}>
+                  22.4
+                </Text>
                 <Text style={[styles.statStatus, { color: PRIMARY }]}>
                   Normal
                 </Text>
               </View>
-              <View style={styles.progressBarBg}>
+              <View
+                style={[
+                  styles.progressBarBg,
+                  { backgroundColor: isDark ? "#334155" : "#f1f5f9" },
+                ]}
+              >
                 <View
                   style={[
                     styles.progressBarFill,
@@ -136,7 +185,12 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
             </View>
 
             {/* Goal Progress Card */}
-            <View style={styles.statCard}>
+            <View
+              style={[
+                styles.statCard,
+                { backgroundColor: cardBg, borderColor },
+              ]}
+            >
               <View style={styles.statHeader}>
                 <View
                   style={[
@@ -146,13 +200,22 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 >
                   <MaterialIcons name="flag" size={18} color={SECONDARY} />
                 </View>
-                <Text style={styles.statLabel}>GOAL PROGRESS</Text>
+                <Text style={[styles.statLabel, { color: textSub }]}>
+                  GOAL PROGRESS
+                </Text>
               </View>
               <View style={styles.statValueRow}>
-                <Text style={styles.statValue}>84%</Text>
-                <Text style={styles.statSubValue}>-2.4kg</Text>
+                <Text style={[styles.statValue, { color: textMain }]}>84%</Text>
+                <Text style={[styles.statSubValue, { color: textSub }]}>
+                  -2.4kg
+                </Text>
               </View>
-              <View style={styles.progressBarBg}>
+              <View
+                style={[
+                  styles.progressBarBg,
+                  { backgroundColor: isDark ? "#334155" : "#f1f5f9" },
+                ]}
+              >
                 <View
                   style={[
                     styles.progressBarFill,
@@ -166,20 +229,44 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           {/* Manage Data Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>MANAGE YOUR DATA</Text>
-              <MaterialIcons name="info-outline" size={16} color="#cbd5e1" />
+              <Text style={[styles.sectionTitle, { color: textSub }]}>
+                MANAGE YOUR DATA
+              </Text>
+              <MaterialIcons
+                name="info-outline"
+                size={16}
+                color={isDark ? "#475569" : "#cbd5e1"}
+              />
             </View>
 
-            <View style={styles.listContainer}>
+            <View
+              style={[
+                styles.listContainer,
+                { backgroundColor: cardBg, borderColor },
+              ]}
+            >
               <ListItem
                 icon="person-outline"
                 title="Personal Information"
                 hasChevron
+                textColor={textMain}
+                subColor={textSub}
+                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
               />
-              <ListItem icon="history" title="Weight History" hasChevron />
+              <ListItem
+                icon="history"
+                title="Weight History"
+                hasChevron
+                textColor={textMain}
+                subColor={textSub}
+                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
+              />
               <ListItem
                 icon="sync"
                 title="Apple Health Sync"
+                textColor={textMain}
+                subColor={textSub}
+                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
                 rightElement={
                   <View style={styles.toggleSwitch}>
                     <View style={styles.toggleKnob} />
@@ -194,20 +281,45 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
             <Text
               style={[
                 styles.sectionTitle,
-                { marginBottom: 12, paddingHorizontal: 4 },
+                { marginBottom: 12, paddingHorizontal: 4, color: textSub },
               ]}
             >
               APP PREFERENCES
             </Text>
 
-            <View style={styles.listContainer}>
+            <View
+              style={[
+                styles.listContainer,
+                { backgroundColor: cardBg, borderColor },
+              ]}
+            >
               <ListItem
                 icon="straighten"
                 title="Units"
+                textColor={textMain}
+                subColor={textSub}
+                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
                 rightElement={
-                  <View style={styles.toggleGroup}>
-                    <View style={styles.toggleOptionActive}>
-                      <Text style={styles.toggleTextActive}>Metric</Text>
+                  <View
+                    style={[
+                      styles.toggleGroup,
+                      { backgroundColor: isDark ? "#2E3032" : "#f1f5f9" },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.toggleOptionActive,
+                        { backgroundColor: isDark ? "#475569" : "white" },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.toggleTextActive,
+                          { color: isDark ? "white" : TEXT_MAIN },
+                        ]}
+                      >
+                        Metric
+                      </Text>
                     </View>
                     <Text style={styles.toggleTextInactive}>Imperial</Text>
                   </View>
@@ -216,7 +328,14 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               <ListItem
                 icon="brightness-6" // dark_mode -> brightness-6 or similar
                 title="Display Mode"
-                rightElement={<Text style={styles.valueText}>System</Text>}
+                textColor={textMain}
+                subColor={textSub}
+                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
+                rightElement={
+                  <Text style={[styles.valueText, { color: textSub }]}>
+                    System
+                  </Text>
+                }
               />
             </View>
           </View>
@@ -227,6 +346,9 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               style={[
                 styles.listContainer,
                 {
+                  backgroundColor: isDark
+                    ? "rgba(32, 35, 37, 0.8)"
+                    : "rgba(255, 255, 255, 0.8)",
                   borderWidth: 0,
                   shadowOpacity: 0.05,
                   shadowRadius: 10,
@@ -237,18 +359,26 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               <View style={[styles.listItem, { borderBottomWidth: 0 }]}>
                 <View style={styles.listItemLeft}>
                   <View
-                    style={[styles.iconCircle, { backgroundColor: "#f1f5f9" }]}
+                    style={[
+                      styles.iconCircle,
+                      { backgroundColor: isDark ? "#2E3032" : "#f1f5f9" },
+                    ]}
                   >
-                    <MaterialIcons name="security" size={18} color={TEXT_SUB} />
+                    <MaterialIcons name="security" size={18} color={textSub} />
                   </View>
-                  <Text style={[styles.itemTitle, { fontWeight: "600" }]}>
+                  <Text
+                    style={[
+                      styles.itemTitle,
+                      { fontWeight: "600", color: textMain },
+                    ]}
+                  >
                     Privacy & Security
                   </Text>
                 </View>
                 <MaterialIcons
                   name="arrow-forward-ios"
                   size={16}
-                  color="#cbd5e1"
+                  color={isDark ? "#475569" : "#cbd5e1"}
                 />
               </View>
             </View>
@@ -256,8 +386,12 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              <MaterialIcons name="verified-user" size={14} color="#cbd5e1" />
+            <Text style={[styles.footerText, { color: textSub }]}>
+              <MaterialIcons
+                name="verified-user"
+                size={14}
+                color={isDark ? "#475569" : "#cbd5e1"}
+              />
               {"  "}VERIFIED WHO STANDARDS
             </Text>
           </View>
@@ -276,22 +410,36 @@ function ListItem({
   title,
   hasChevron,
   rightElement,
+  textColor,
+  subColor,
+  borderColor,
 }: {
   icon: any;
   title: string;
   hasChevron?: boolean;
   rightElement?: React.ReactNode;
+  textColor?: string;
+  subColor?: string;
+  borderColor?: string;
 }) {
   return (
-    <View style={styles.listItem}>
+    <View
+      style={[styles.listItem, { borderBottomColor: borderColor || "#f8fafc" }]}
+    >
       <View style={styles.listItemLeft}>
-        <MaterialIcons name={icon} size={22} color={TEXT_SUB} />
-        <Text style={styles.itemTitle}>{title}</Text>
+        <MaterialIcons name={icon} size={22} color={subColor || TEXT_SUB} />
+        <Text style={[styles.itemTitle, { color: textColor || TEXT_MAIN }]}>
+          {title}
+        </Text>
       </View>
       {rightElement
         ? rightElement
         : hasChevron && (
-            <MaterialIcons name="chevron-right" size={24} color="#cbd5e1" />
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={subColor ? subColor + "80" : "#cbd5e1"}
+            />
           )}
     </View>
   );
@@ -300,11 +448,9 @@ function ListItem({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: BACKGROUND_LIGHT,
   },
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_LIGHT,
   },
   header: {
     height: 56,
@@ -419,7 +565,6 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "white",
     borderRadius: 24,
     padding: 20,
     shadowColor: "#000",
@@ -446,7 +591,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: TEXT_SUB,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
@@ -459,7 +603,6 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 30,
     fontWeight: "900",
-    color: TEXT_MAIN,
     letterSpacing: -1,
   },
   statStatus: {
@@ -469,7 +612,6 @@ const styles = StyleSheet.create({
   statSubValue: {
     fontSize: 12,
     fontWeight: "700",
-    color: TEXT_SUB,
   },
   progressBarBg: {
     height: 6,
@@ -501,10 +643,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   listContainer: {
-    backgroundColor: "white",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#f1f5f9",
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -592,7 +732,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 10,
     fontWeight: "700",
-    color: TEXT_SUB,
     flexDirection: "row",
     alignItems: "center",
     textTransform: "uppercase",

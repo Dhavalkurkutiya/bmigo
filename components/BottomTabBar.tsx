@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from "react-native";
 
 type Tab = "home" | "stats" | "hub";
@@ -23,9 +24,18 @@ export default function BottomTabBar({
   currentTab,
   onTabPress,
 }: BottomTabBarProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  // Dynamic Colors
+  const activeColor = PRIMARY;
+  const inactiveColor = isDark ? "#94a3b8" : INACTIVE;
+  const bgColor = isDark ? "rgba(21, 23, 24, 0.9)" : "rgba(255, 255, 255, 0.9)";
+  const borderColor = isDark ? "#2E3032" : "#f1f5f9";
+
   const renderTab = (tab: Tab, label: string, iconName: any) => {
     const isActive = currentTab === tab;
-    const color = isActive ? PRIMARY : INACTIVE;
+    const color = isActive ? activeColor : inactiveColor;
 
     return (
       <TouchableOpacity
@@ -41,8 +51,12 @@ export default function BottomTabBar({
 
   return (
     <View style={styles.containerWrapper}>
-      <BlurView intensity={80} tint="light" style={styles.blurContainer}>
-        <View style={styles.container}>
+      <BlurView
+        intensity={isDark ? 50 : 80}
+        tint={isDark ? "dark" : "light"}
+        style={[styles.blurContainer, { borderTopColor: borderColor }]}
+      >
+        <View style={[styles.container, { backgroundColor: bgColor }]}>
           {renderTab("home", "HOME", "home")}
           {renderTab("stats", "STATS", "show-chart")}
           {renderTab("hub", "HUB", "person")}
