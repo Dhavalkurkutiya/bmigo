@@ -29,7 +29,7 @@ const DARK_CARD_BG = "#202325";
 const DARK_BORDER = "#2E3032";
 
 // Default Constants (Light Theme) for static styles
-const BACKGROUND_LIGHT = LIGHT_BG;
+// const BACKGROUND_LIGHT = LIGHT_BG;
 const TEXT_MAIN = LIGHT_TEXT_MAIN;
 const TEXT_SUB = LIGHT_TEXT_SUB;
 

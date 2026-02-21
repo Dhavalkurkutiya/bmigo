@@ -3,8 +3,8 @@ import {
   HistoryRecord as DBHistoryRecord,
   deleteHistoryRecord,
   getHistoryRecords,
-  initDatabase,
 } from "@/services/database";
+import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 
 export interface HistoryRecord {
@@ -21,32 +21,37 @@ export interface HistoryRecord {
 export function useHistory() {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const db = useSQLiteContext();
 
-  // Initialize DB and load history
+  // Load history from the explicitly provided DB instance
   useEffect(() => {
     let mounted = true;
-    const initAndLoad = async () => {
+    const loadData = async () => {
       try {
-        await initDatabase();
-        const records = await getHistoryRecords();
+        const records = await getHistoryRecords(db);
         if (mounted) {
           setHistory(mapDBRecordsToUI(records));
         }
       } catch (e) {
-        console.error("Failed to initialize or load history", e);
+        console.error("Failed to load history", e);
       } finally {
         if (mounted) setLoading(false);
       }
     };
-    initAndLoad();
+
+    if (db) {
+      loadData();
+    }
+
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [db]);
 
   const refreshHistory = async () => {
     try {
-      const records = await getHistoryRecords();
+      if (!db) return;
+      const records = await getHistoryRecords(db);
       setHistory(mapDBRecordsToUI(records));
     } catch (e) {
       console.error("Failed to refresh history", e);
@@ -55,10 +60,12 @@ export function useHistory() {
 
   const addRecord = async (record: Omit<HistoryRecord, "id" | "date">) => {
     try {
+      if (!db) return;
       // Determine athlete mode boolean
       const athleteMode = record.mode === "athlete";
 
       await addHistoryRecord(
+        db,
         record.weight,
         record.height,
         record.bmi,
@@ -83,7 +90,8 @@ export function useHistory() {
 
   const deleteRecord = async (id: string) => {
     try {
-      await deleteHistoryRecord(Number(id));
+      if (!db) return;
+      await deleteHistoryRecord(db, Number(id));
       await refreshHistory();
     } catch (e) {
       console.error("Failed to delete record", e);

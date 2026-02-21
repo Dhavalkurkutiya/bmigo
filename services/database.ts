@@ -1,11 +1,7 @@
 import * as SQLite from "expo-sqlite";
 
-const DB_NAME = "bmigo.db";
-
-export const initDatabase = async () => {
+export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
   try {
-    const db = await SQLite.openDatabaseAsync(DB_NAME);
-
     // Create history table
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
@@ -21,15 +17,10 @@ export const initDatabase = async () => {
     `);
 
     console.log("Database initialized successfully");
-    return db;
   } catch (error) {
     console.error("Error initializing database:", error);
     throw error;
   }
-};
-
-export const getDB = async () => {
-  return await SQLite.openDatabaseAsync(DB_NAME);
 };
 
 export interface HistoryRecord {
@@ -43,6 +34,7 @@ export interface HistoryRecord {
 }
 
 export const addHistoryRecord = async (
+  db: SQLite.SQLiteDatabase,
   weight: number,
   height: number,
   bmi: number,
@@ -50,7 +42,6 @@ export const addHistoryRecord = async (
   athleteMode: boolean,
 ): Promise<number | null> => {
   try {
-    const db = await getDB();
     const createdAt = new Date().toISOString();
 
     const result = await db.runAsync(
@@ -70,9 +61,10 @@ export const addHistoryRecord = async (
   }
 };
 
-export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
+export const getHistoryRecords = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<HistoryRecord[]> => {
   try {
-    const db = await getDB();
     const result = await db.getAllAsync<HistoryRecord>(
       "SELECT * FROM history ORDER BY created_at DESC",
     );
@@ -83,9 +75,11 @@ export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
   }
 };
 
-export const deleteHistoryRecord = async (id: number): Promise<boolean> => {
+export const deleteHistoryRecord = async (
+  db: SQLite.SQLiteDatabase,
+  id: number,
+): Promise<boolean> => {
   try {
-    const db = await getDB();
     await db.runAsync("DELETE FROM history WHERE id = ?", id);
     return true;
   } catch (error) {
