@@ -1,6 +1,7 @@
 import { useHistory } from "@/hooks/useHistory";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
   Appearance,
@@ -9,12 +10,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
   useColorScheme,
 } from "react-native";
-import Svg, { Circle } from "react-native-svg";
 
 const PRIMARY = "#00ff9d";
 const SECONDARY = "#0ea5e9";
@@ -50,14 +51,6 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
   const cardBg = isDark ? DARK_CARD_BG : LIGHT_CARD_BG;
   const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
 
-  const CIRCLE_SIZE = 120; // Original was 112px + padding = 128px ish
-  const STROKE_WIDTH = 8;
-  const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-  const progress = 0.72; // 72%
-  const offset = CIRCUMFERENCE - progress * CIRCUMFERENCE;
-
   const currentRecord = history && history.length > 0 ? history[0] : null;
   const currentBmi = currentRecord ? currentRecord.bmi.toFixed(1) : "--";
   const currentStatus = currentRecord ? currentRecord.status : "No Data";
@@ -71,12 +64,63 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
   const [showDisplayModeModal, setShowDisplayModeModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
+  const [personalInfo, setPersonalInfo] = useState({
+    name: "Guest",
+    age: "",
+    gender: "",
+    goalWeight: "",
+    profileImage: "",
+  });
+  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
+  const [showWeightHistoryModal, setShowWeightHistoryModal] = useState(false);
+  const [tempInfo, setTempInfo] = useState({
+    name: "",
+    age: "",
+    gender: "",
+    goalWeight: "",
+    profileImage: "",
+  });
+
+  let goalProgress = 0;
+  let goalChangeText = "--";
+
+  if (history && history.length > 0 && personalInfo.goalWeight) {
+    const currentWeight = history[0].weight;
+    const startWeight = history[history.length - 1].weight;
+    const goalWeightNum = parseFloat(personalInfo.goalWeight);
+
+    if (!isNaN(goalWeightNum)) {
+      if (startWeight === goalWeightNum) {
+        goalProgress = 100;
+        goalChangeText = "0kg";
+      } else {
+        const targetDiff = startWeight - goalWeightNum;
+        const currentDiff = startWeight - currentWeight;
+        goalProgress = Math.min(
+          Math.max((currentDiff / targetDiff) * 100, 0),
+          100,
+        );
+
+        const weightChange = currentWeight - startWeight;
+        goalChangeText =
+          weightChange > 0
+            ? `+${weightChange.toFixed(1)}kg`
+            : `${weightChange.toFixed(1)}kg`;
+      }
+    }
+  }
+
   useEffect(() => {
     (async () => {
       try {
-        const stored = await AsyncStorage.getItem("themeMode");
-        if (stored === "light" || stored === "dark") {
-          setDisplayMode(stored);
+        const storedMode = await AsyncStorage.getItem("themeMode");
+        if (storedMode === "light" || storedMode === "dark") {
+          setDisplayMode(storedMode);
+        }
+
+        const storedInfo = await AsyncStorage.getItem("personalInfo");
+        if (storedInfo) {
+          setPersonalInfo(JSON.parse(storedInfo));
         }
       } catch (e) {
         console.error("Error loading theme mode", e);
@@ -100,27 +144,40 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
     }
   };
 
+  const handleSavePersonalInfo = async () => {
+    setPersonalInfo(tempInfo);
+    setShowPersonalInfoModal(false);
+    try {
+      await AsyncStorage.setItem("personalInfo", JSON.stringify(tempInfo));
+    } catch (e) {
+      console.error("Error saving personal info", e);
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      // Ask for permission first if using camera roll exclusively, but for picker it's built-in
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        const selectedUri = result.assets[0].uri;
+        const newInfo = { ...personalInfo, profileImage: selectedUri };
+        setPersonalInfo(newInfo); // Update dynamically
+        await AsyncStorage.setItem("personalInfo", JSON.stringify(newInfo)); // Save instantly
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+    }
+  };
+
   return (
     <View style={[styles.safeArea, { backgroundColor: bgMain }]}>
       <View style={[styles.container, { backgroundColor: bgMain }]}>
-        {/* Header */}
-        {/* <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => (onBack ? onBack() : router.back())}
-            style={styles.headerButtonLeft}
-          >
-            <MaterialIcons name="arrow-back-ios" size={20} color={TEXT_MAIN} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Health Hub</Text>
-          <TouchableOpacity style={styles.headerButton}>
-            <MaterialIcons
-              name="notifications-none"
-              size={24}
-              color={TEXT_MAIN}
-            />
-          </TouchableOpacity>
-        </View> */}
-
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -128,58 +185,57 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           {/* Profile Section */}
           <View style={styles.profileSection}>
             <View style={styles.avatarContainer}>
-              {/* Ring */}
-              <View
-                style={[
-                  styles.ringContainer,
-                  { transform: [{ rotate: "-120deg" }] },
-                ]}
-              >
-                <Svg height={CIRCLE_SIZE} width={CIRCLE_SIZE}>
-                  <Circle
-                    cx={CIRCLE_SIZE / 2}
-                    cy={CIRCLE_SIZE / 2}
-                    r={RADIUS}
-                    stroke={isDark ? "#334155" : "#e2e8f0"}
-                    strokeWidth={STROKE_WIDTH}
-                    fill="transparent"
-                  />
-                  <Circle
-                    cx={CIRCLE_SIZE / 2}
-                    cy={CIRCLE_SIZE / 2}
-                    r={RADIUS}
-                    stroke={PRIMARY}
-                    strokeWidth={STROKE_WIDTH}
-                    fill="transparent"
-                    strokeDasharray={CIRCUMFERENCE}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round" // Optional, design seems sharp but round is nicer
-                  />
-                </Svg>
-              </View>
-
               {/* Avatar Image */}
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{
-                    uri: "https://avatars.githubusercontent.com/u/57305529?v=4",
-                  }}
-                  style={styles.avatarImage}
-                />
-              </View>
-
-              {/* Pro Badge */}
-              <View style={[styles.proBadge, { borderColor: cardBg }]}>
-                <Text style={styles.proText}>PRO</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.imageWrapper}
+                onPress={pickImage}
+                activeOpacity={0.8}
+              >
+                {personalInfo.profileImage ? (
+                  <Image
+                    source={{
+                      uri: personalInfo.profileImage,
+                    }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.avatarImage,
+                      {
+                        backgroundColor: PRIMARY,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 40,
+                        fontWeight: "800",
+                        color: "#0f172a",
+                      }}
+                    >
+                      {personalInfo.name
+                        ? personalInfo.name.charAt(0).toUpperCase()
+                        : "U"}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.editIconContainer}>
+                  <MaterialIcons name="edit" size={14} color="white" />
+                </View>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.userInfo}>
               <Text style={[styles.userName, { color: textMain }]}>
-                Dhaval Kurkutia
+                {personalInfo.name || "App User"}
               </Text>
               <Text style={[styles.userMeta, { color: textSub }]}>
-                Joined Jan 2026 • Daily Tracker
+                {personalInfo.age ? `${personalInfo.age} years • ` : ""}
+                {personalInfo.gender ? `${personalInfo.gender} • ` : ""}
+                Daily Tracker
               </Text>
             </View>
           </View>
@@ -254,9 +310,11 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 </Text>
               </View>
               <View style={styles.statValueRow}>
-                <Text style={[styles.statValue, { color: textMain }]}>84%</Text>
+                <Text style={[styles.statValue, { color: textMain }]}>
+                  {goalProgress.toFixed(0)}%
+                </Text>
                 <Text style={[styles.statSubValue, { color: textSub }]}>
-                  -2.4kg
+                  {goalChangeText}
                 </Text>
               </View>
               <View
@@ -268,7 +326,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 <View
                   style={[
                     styles.progressBarFill,
-                    { width: "84%", backgroundColor: SECONDARY },
+                    { width: `${goalProgress}%`, backgroundColor: SECONDARY },
                   ]}
                 />
               </View>
@@ -301,6 +359,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 textColor={textMain}
                 subColor={textSub}
                 borderColor={isDark ? DARK_BORDER : "#f8fafc"}
+                onPress={() => {
+                  setTempInfo(personalInfo);
+                  setShowPersonalInfoModal(true);
+                }}
               />
               <ListItem
                 icon="history"
@@ -309,18 +371,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 textColor={textMain}
                 subColor={textSub}
                 borderColor={isDark ? DARK_BORDER : "#f8fafc"}
-              />
-              <ListItem
-                icon="sync"
-                title="Apple Health Sync"
-                textColor={textMain}
-                subColor={textSub}
-                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
-                rightElement={
-                  <View style={styles.toggleSwitch}>
-                    <View style={styles.toggleKnob} />
-                  </View>
-                }
+                onPress={() => setShowWeightHistoryModal(true)}
               />
             </View>
           </View>
@@ -342,38 +393,6 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 { backgroundColor: cardBg, borderColor },
               ]}
             >
-              <ListItem
-                icon="straighten"
-                title="Units"
-                textColor={textMain}
-                subColor={textSub}
-                borderColor={isDark ? DARK_BORDER : "#f8fafc"}
-                rightElement={
-                  <View
-                    style={[
-                      styles.toggleGroup,
-                      { backgroundColor: isDark ? "#2E3032" : "#f1f5f9" },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.toggleOptionActive,
-                        { backgroundColor: isDark ? "#475569" : "white" },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.toggleTextActive,
-                          { color: isDark ? "white" : TEXT_MAIN },
-                        ]}
-                      >
-                        Metric
-                      </Text>
-                    </View>
-                    <Text style={styles.toggleTextInactive}>Imperial</Text>
-                  </View>
-                }
-              />
               <ListItem
                 icon="brightness-6" // dark_mode -> brightness-6 or similar
                 title="Display Mode"
@@ -524,10 +543,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                   <Text style={{ fontWeight: "bold", color: textMain }}>
                     1. Local Storage{"\n"}
                   </Text>
-                  All of your health data, including your height, weight, BMI
-                  results, and history, is securely stored directly on your
-                  device. We do not use remote servers or cloud databases to
-                  store your personal information.{"\n\n"}
+                  All of your health data, including your height, weight,
+                  personal information, BMI results, and history, is securely
+                  stored directly on your device. We do not use remote servers
+                  or cloud databases to store your personal information.{"\n\n"}
                   <Text style={{ fontWeight: "bold", color: textMain }}>
                     2. Usage of Data{"\n"}
                   </Text>
@@ -551,6 +570,254 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                   locks) to protect your information from unauthorized physical
                   access.
                 </Text>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Personal Information Modal */}
+        <Modal
+          visible={showPersonalInfoModal}
+          transparent
+          animationType="slide"
+        >
+          <View style={styles.privacyModalContainer}>
+            <View
+              style={[
+                styles.privacyModalContent,
+                { backgroundColor: bgMain, borderColor, minHeight: "65%" },
+              ]}
+            >
+              <View style={styles.privacyModalHeader}>
+                <Text style={[styles.privacyModalTitle, { color: textMain }]}>
+                  Personal Info
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowPersonalInfoModal(false)}
+                  style={styles.closeButton}
+                >
+                  <MaterialIcons name="close" size={24} color={textMain} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: textSub }]}>
+                  Name
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { color: textMain, borderColor, backgroundColor: cardBg },
+                  ]}
+                  value={tempInfo.name}
+                  onChangeText={(t) => setTempInfo((p) => ({ ...p, name: t }))}
+                  placeholder="Your Name"
+                  placeholderTextColor={textSub}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: textSub }]}>Age</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { color: textMain, borderColor, backgroundColor: cardBg },
+                  ]}
+                  value={tempInfo.age}
+                  onChangeText={(t) => setTempInfo((p) => ({ ...p, age: t }))}
+                  placeholder="Years"
+                  keyboardType="numeric"
+                  placeholderTextColor={textSub}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: textSub }]}>
+                  Goal Weight (kg)
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { color: textMain, borderColor, backgroundColor: cardBg },
+                  ]}
+                  value={tempInfo.goalWeight}
+                  onChangeText={(t) =>
+                    setTempInfo((p) => ({ ...p, goalWeight: t }))
+                  }
+                  placeholder="Target Weight"
+                  keyboardType="numeric"
+                  placeholderTextColor={textSub}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.inputLabel, { color: textSub }]}>
+                  Gender
+                </Text>
+                <View style={styles.genderRow}>
+                  {["Male", "Female", "Other"].map((g) => (
+                    <TouchableOpacity
+                      key={g}
+                      onPress={() => setTempInfo((p) => ({ ...p, gender: g }))}
+                      style={[
+                        styles.genderBtn,
+                        { borderColor },
+                        tempInfo.gender === g && {
+                          backgroundColor: PRIMARY,
+                          borderColor: PRIMARY,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          color: tempInfo.gender === g ? "#0f172a" : textMain,
+                          fontWeight: tempInfo.gender === g ? "700" : "500",
+                        }}
+                      >
+                        {g}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: textMain }]}
+                onPress={handleSavePersonalInfo}
+              >
+                <Text style={[styles.saveBtnText, { color: bgMain }]}>
+                  Save Changes
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Weight History Modal */}
+        <Modal
+          visible={showWeightHistoryModal}
+          transparent
+          animationType="slide"
+        >
+          <View style={styles.privacyModalContainer}>
+            <View
+              style={[
+                styles.privacyModalContent,
+                { backgroundColor: bgMain, borderColor, minHeight: "75%" },
+              ]}
+            >
+              <View style={styles.privacyModalHeader}>
+                <Text style={[styles.privacyModalTitle, { color: textMain }]}>
+                  Weight History
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowWeightHistoryModal(false)}
+                  style={styles.closeButton}
+                >
+                  <MaterialIcons name="close" size={24} color={textMain} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
+                {history.length > 0 ? (
+                  history.map((record) => (
+                    <View
+                      key={record.id}
+                      style={[
+                        styles.historyItem,
+                        { backgroundColor: cardBg, borderColor },
+                      ]}
+                    >
+                      <View style={styles.historyItemHeader}>
+                        <Text style={[styles.historyDate, { color: textSub }]}>
+                          {new Date(record.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </Text>
+                        <View
+                          style={[
+                            styles.historyBadge,
+                            {
+                              backgroundColor:
+                                record.status === "Normal"
+                                  ? "rgba(0, 255, 157, 0.1)"
+                                  : "rgba(255, 152, 0, 0.1)",
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.historyBadgeText,
+                              {
+                                color:
+                                  record.status === "Normal"
+                                    ? PRIMARY
+                                    : "#ff9800",
+                              },
+                            ]}
+                          >
+                            {record.status}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.historyRow}>
+                        <View style={styles.historyBlock}>
+                          <Text
+                            style={[styles.historyLabel, { color: textSub }]}
+                          >
+                            Weight
+                          </Text>
+                          <Text
+                            style={[styles.historyValue, { color: textMain }]}
+                          >
+                            {record.weight.toFixed(1)} kg
+                          </Text>
+                        </View>
+                        <View style={styles.historyBlock}>
+                          <Text
+                            style={[styles.historyLabel, { color: textSub }]}
+                          >
+                            Height
+                          </Text>
+                          <Text
+                            style={[styles.historyValue, { color: textMain }]}
+                          >
+                            {record.height.toFixed(1)} cm
+                          </Text>
+                        </View>
+                        <View style={styles.historyBlock}>
+                          <Text
+                            style={[styles.historyLabel, { color: textSub }]}
+                          >
+                            BMI
+                          </Text>
+                          <Text
+                            style={[styles.historyValue, { color: textMain }]}
+                          >
+                            {record.bmi.toFixed(1)}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.emptyHistory}>
+                    <MaterialIcons
+                      name="monitor-weight"
+                      size={48}
+                      color={textSub}
+                      style={{ opacity: 0.5, marginBottom: 16 }}
+                    />
+                    <Text style={{ color: textSub, fontSize: 16 }}>
+                      No history records yet
+                    </Text>
+                  </View>
+                )}
               </ScrollView>
             </View>
           </View>
@@ -653,23 +920,13 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: "relative",
     marginBottom: 24,
-    width: 120, // Match CIRCLE_SIZE
-    height: 120,
+    width: 104,
+    height: 104,
     justifyContent: "center",
     alignItems: "center",
   },
-  ringContainer: {
-    position: "absolute",
-    // Center it
-    top: 0,
-    left: 0,
-  },
   imageWrapper: {
-    width: 104, // 112px in HTML (w-28 h-28) minus padding?
-    // HTML: w-28 (7rem=112px). p-1.
-    // Here let's make it fit nicely inside the ring.
-    // If ring is 120, R=56.
-    // Image should be slightly smaller.
+    width: 104,
     height: 104,
     borderRadius: 52,
     backgroundColor: "white",
@@ -683,30 +940,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  editIconContainer: {
+    position: "absolute",
+    bottom: 4,
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
   avatarImage: {
     width: "100%",
     height: "100%",
     borderRadius: 50,
-  },
-  proBadge: {
-    position: "absolute",
-    bottom: -4,
-    right: 8,
-    backgroundColor: PRIMARY,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "white",
-    zIndex: 10,
-    elevation: 3,
-  },
-  proText: {
-    color: "#0f172a",
-    fontSize: 10,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   userInfo: {
     alignItems: "center",
@@ -969,5 +1218,92 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     paddingBottom: 40,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  genderRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  genderBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  saveBtn: {
+    marginTop: 10,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  saveBtnText: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  historyItem: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  historyItemHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  historyDate: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  historyBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  historyBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  historyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  historyBlock: {
+    alignItems: "center",
+    flex: 1,
+  },
+  historyLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  historyValue: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  emptyHistory: {
+    alignItems: "center",
+    marginTop: 60,
   },
 });
