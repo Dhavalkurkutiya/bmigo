@@ -69,6 +69,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
     "system",
   );
   const [showDisplayModeModal, setShowDisplayModeModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -391,7 +392,9 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
 
           {/* Privacy Section (Modern) */}
           <View style={styles.section}>
-            <View
+            <TouchableOpacity
+              onPress={() => setShowPrivacyModal(true)}
+              activeOpacity={0.7}
               style={[
                 styles.listContainer,
                 {
@@ -430,7 +433,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                   color={isDark ? "#475569" : "#cbd5e1"}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* Footer */}
@@ -488,6 +491,69 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               </TouchableWithoutFeedback>
             </View>
           </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Privacy Policy Modal */}
+        <Modal visible={showPrivacyModal} transparent animationType="slide">
+          <View style={styles.privacyModalContainer}>
+            <View
+              style={[
+                styles.privacyModalContent,
+                { backgroundColor: bgMain, borderColor },
+              ]}
+            >
+              <View style={styles.privacyModalHeader}>
+                <Text style={[styles.privacyModalTitle, { color: textMain }]}>
+                  Privacy & Security
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowPrivacyModal(false)}
+                  style={styles.closeButton}
+                >
+                  <MaterialIcons name="close" size={24} color={textMain} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                style={styles.privacyScroll}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={[styles.privacyText, { color: textSub }]}>
+                  Your privacy is incredibly important to us. BMI Go is designed
+                  with a privacy-first approach, ensuring that your data belongs
+                  to you.{"\n\n"}
+                  <Text style={{ fontWeight: "bold", color: textMain }}>
+                    1. Local Storage{"\n"}
+                  </Text>
+                  All of your health data, including your height, weight, BMI
+                  results, and history, is securely stored directly on your
+                  device. We do not use remote servers or cloud databases to
+                  store your personal information.{"\n\n"}
+                  <Text style={{ fontWeight: "bold", color: textMain }}>
+                    2. Usage of Data{"\n"}
+                  </Text>
+                  Your data is solely used to calculate your BMI, provide health
+                  insights, and keep a history of your progress. We do not
+                  share, sell, or distribute any of your personal data to third
+                  parties.{"\n\n"}
+                  <Text style={{ fontWeight: "bold", color: textMain }}>
+                    3. App Permissions{"\n"}
+                  </Text>
+                  The pedometer feature requires access to your device&apos;s
+                  motion sensors. This permission is used strictly to count your
+                  real-time steps and track daily activity. None of this motion
+                  data is transmitted externally.{"\n\n"}
+                  <Text style={{ fontWeight: "bold", color: textMain }}>
+                    4. Security{"\n"}
+                  </Text>
+                  Given that the application runs locally and your data does not
+                  leave your device, it remains as secure as the device itself.
+                  Please ensure you use device-level security (such as screen
+                  locks) to protect your information from unauthorized physical
+                  access.
+                </Text>
+              </ScrollView>
+            </View>
+          </View>
         </Modal>
       </View>
     </View>
@@ -866,5 +932,42 @@ const styles = StyleSheet.create({
   modalOptionText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  privacyModalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  privacyModalContent: {
+    height: "85%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+  },
+  privacyModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  privacyModalTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  closeButton: {
+    padding: 4,
+    backgroundColor: "rgba(150,150,150,0.1)",
+    borderRadius: 20,
+  },
+  privacyScroll: {
+    flex: 1,
+  },
+  privacyText: {
+    fontSize: 15,
+    lineHeight: 24,
+    paddingBottom: 40,
   },
 });
