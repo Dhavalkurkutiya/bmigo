@@ -1,11 +1,16 @@
 import { useHistory } from "@/hooks/useHistory";
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
+  Appearance,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   useColorScheme,
 } from "react-native";
@@ -59,6 +64,40 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
   const bmiProgress = currentRecord
     ? Math.min((currentRecord.bmi / 40) * 100, 100)
     : 0;
+
+  const [displayMode, setDisplayMode] = useState<"system" | "light" | "dark">(
+    "system",
+  );
+  const [showDisplayModeModal, setShowDisplayModeModal] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem("themeMode");
+        if (stored === "light" || stored === "dark") {
+          setDisplayMode(stored);
+        }
+      } catch (e) {
+        console.error("Error loading theme mode", e);
+      }
+    })();
+  }, []);
+
+  const handleDisplayModeChange = async (mode: "system" | "light" | "dark") => {
+    setDisplayMode(mode);
+    setShowDisplayModeModal(false);
+    try {
+      if (mode === "system") {
+        await AsyncStorage.removeItem("themeMode");
+        Appearance.setColorScheme(null);
+      } else {
+        await AsyncStorage.setItem("themeMode", mode);
+        Appearance.setColorScheme(mode);
+      }
+    } catch (e) {
+      console.error("Error setting theme mode", e);
+    }
+  };
 
   return (
     <View style={[styles.safeArea, { backgroundColor: bgMain }]}>
@@ -340,9 +379,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 textColor={textMain}
                 subColor={textSub}
                 borderColor={isDark ? DARK_BORDER : "#f8fafc"}
+                onPress={() => setShowDisplayModeModal(true)}
                 rightElement={
                   <Text style={[styles.valueText, { color: textSub }]}>
-                    System
+                    {displayMode.charAt(0).toUpperCase() + displayMode.slice(1)}
                   </Text>
                 }
               />
@@ -408,12 +448,52 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           {/* Bottom Padding for Tab Bar */}
           <View style={{ height: 100 }} />
         </ScrollView>
+
+        {/* Display Mode Modal */}
+        <Modal visible={showDisplayModeModal} transparent animationType="fade">
+          <TouchableWithoutFeedback
+            onPress={() => setShowDisplayModeModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View
+                  style={[
+                    styles.modalContent,
+                    { backgroundColor: cardBg, borderColor },
+                  ]}
+                >
+                  <Text style={[styles.modalTitle, { color: textMain }]}>
+                    Select Display Mode
+                  </Text>
+                  {(["system", "light", "dark"] as const).map((mode) => (
+                    <TouchableOpacity
+                      key={mode}
+                      style={styles.modalOption}
+                      onPress={() => handleDisplayModeChange(mode)}
+                    >
+                      <Text
+                        style={[
+                          styles.modalOptionText,
+                          { color: displayMode === mode ? PRIMARY : textMain },
+                        ]}
+                      >
+                        {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                      </Text>
+                      {displayMode === mode && (
+                        <MaterialIcons name="check" size={20} color={PRIMARY} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     </View>
   );
 }
 
-// Helper Component for List Items
 function ListItem({
   icon,
   title,
@@ -422,6 +502,7 @@ function ListItem({
   textColor,
   subColor,
   borderColor,
+  onPress,
 }: {
   icon: any;
   title: string;
@@ -430,8 +511,9 @@ function ListItem({
   textColor?: string;
   subColor?: string;
   borderColor?: string;
+  onPress?: () => void;
 }) {
-  return (
+  const content = (
     <View
       style={[styles.listItem, { borderBottomColor: borderColor || "#f8fafc" }]}
     >
@@ -452,6 +534,15 @@ function ListItem({
           )}
     </View>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+  return content;
 }
 
 const styles = StyleSheet.create({
@@ -745,5 +836,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     textTransform: "uppercase",
     letterSpacing: 1.5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 24,
+    paddingBottom: 48,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalOption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(150,150,150,0.1)",
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
