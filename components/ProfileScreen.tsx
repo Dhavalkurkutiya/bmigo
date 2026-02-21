@@ -1,3 +1,4 @@
+import { useHistory } from "@/hooks/useHistory";
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -35,6 +36,7 @@ const TEXT_SUB = LIGHT_TEXT_SUB;
 export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const { history } = useHistory();
 
   // Dynamic Colors
   const bgMain = isDark ? DARK_BG : LIGHT_BG;
@@ -50,6 +52,13 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
 
   const progress = 0.72; // 72%
   const offset = CIRCUMFERENCE - progress * CIRCUMFERENCE;
+
+  const currentRecord = history && history.length > 0 ? history[0] : null;
+  const currentBmi = currentRecord ? currentRecord.bmi.toFixed(1) : "--";
+  const currentStatus = currentRecord ? currentRecord.status : "No Data";
+  const bmiProgress = currentRecord
+    ? Math.min((currentRecord.bmi / 40) * 100, 100)
+    : 0;
 
   return (
     <View style={[styles.safeArea, { backgroundColor: bgMain }]}>
@@ -113,7 +122,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               <View style={styles.imageWrapper}>
                 <Image
                   source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBXzgMGxuAKGo3FUZ347_bMgzptkQI71COiN9Vi3AuOIzpTHQduD2hoXYToEdqYvpwrR10NdqPUmWorUVMhzjZa2xIhQ2_TDRBVRZhwh2Fe8yKRmXdtE4loui7EsQy_7MVt107gHQ0-RrO9cGJqhb7Hlbb19QuUrYqUOFaf3LCvZimz-NQEyGG8ImR7uuLIaCRBX9Lw22Y0ed0JRIX0Rr-NFMWyPW4j60HMqfPm3lpgNwD0b9gDMcbR9rjzOr1V44xLxNxA0oRFwRUY",
+                    uri: "https://avatars.githubusercontent.com/u/57305529?v=4",
                   }}
                   style={styles.avatarImage}
                 />
@@ -127,10 +136,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
 
             <View style={styles.userInfo}>
               <Text style={[styles.userName, { color: textMain }]}>
-                Alex Harrison
+                Dhaval Kurkutia
               </Text>
               <Text style={[styles.userMeta, { color: textSub }]}>
-                Joined Oct 2023 • Daily Tracker
+                Joined Jan 2026 • Daily Tracker
               </Text>
             </View>
           </View>
@@ -163,10 +172,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
               </View>
               <View style={styles.statValueRow}>
                 <Text style={[styles.statValue, { color: textMain }]}>
-                  22.4
+                  {currentBmi}
                 </Text>
                 <Text style={[styles.statStatus, { color: PRIMARY }]}>
-                  Normal
+                  {currentStatus}
                 </Text>
               </View>
               <View
@@ -178,7 +187,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                 <View
                   style={[
                     styles.progressBarFill,
-                    { width: "72%", backgroundColor: PRIMARY },
+                    { width: `${bmiProgress}%`, backgroundColor: PRIMARY },
                   ]}
                 />
               </View>

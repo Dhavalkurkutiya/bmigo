@@ -2,6 +2,7 @@ import BottomTabBar from "@/components/BottomTabBar";
 import HistoryScreen from "@/components/HistoryScreen";
 import ProfileScreen from "@/components/ProfileScreen";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useHistory } from "@/hooks/useHistory";
 import { MaterialIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 
@@ -49,8 +50,30 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
 
   const [activeTab, setActiveTab] = useState<"home" | "stats" | "hub">("home");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+
+  const { history, loading } = useHistory();
+
+  useEffect(() => {
+    if (!loading && history && history.length > 0 && !isDataLoaded) {
+      const latest = history[0];
+      setHeight(Math.round(latest.height));
+      setWeight(Math.round(latest.weight));
+      setIsAthleteMode(latest.mode === "athlete");
+
+      const inches = latest.height / 2.54;
+      const ft = Math.floor(inches / 12);
+      const remainingInches = Math.round(inches % 12);
+      setHeightFt(ft.toString());
+      setHeightIn(remainingInches.toString());
+
+      setIsDataLoaded(true);
+    } else if (!loading && !isDataLoaded) {
+      setIsDataLoaded(true);
+    }
+  }, [history, loading, isDataLoaded]);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
