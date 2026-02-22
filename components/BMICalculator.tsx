@@ -35,7 +35,7 @@ export interface BMIInputData {
 export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
   const [gender, setGender] = useState<"male" | "female">("male");
   const [height, setHeight] = useState(175);
-  const [weight, setWeight] = useState(72);
+  const [weight, setWeight] = useState("72");
   const [age, setAge] = useState(26);
   const [isIndianMode, setIsIndianMode] = useState(false);
   const [isAthleteMode, setIsAthleteMode] = useState(false);
@@ -60,7 +60,7 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
     if (!loading && history && history.length > 0 && !isDataLoaded) {
       const latest = history[0];
       setHeight(Math.round(latest.height));
-      setWeight(Math.round(latest.weight));
+      setWeight(latest.weight.toString());
       setIsAthleteMode(latest.mode === "athlete");
 
       const inches = latest.height / 2.54;
@@ -123,10 +123,11 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
 
     // Weight Validation & Normalization
     let finalWeightKg = 0;
+    const parsedWeight = parseFloat(weight) || 0;
     if (weightUnit === "kg") {
-      finalWeightKg = weight;
+      finalWeightKg = parsedWeight;
     } else {
-      finalWeightKg = weight / 2.20462;
+      finalWeightKg = parsedWeight / 2.20462;
     }
 
     if (finalWeightKg < 20 || finalWeightKg > 300) {
@@ -535,15 +536,27 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
 
               <TextInput
                 style={[styles.inputLarge, { color: themeColors.textPrimary }]}
-                value={weight.toString()}
-                onChangeText={(t) => setWeight(Number(t) || 0)}
-                keyboardType="numeric"
+                value={weight}
+                onChangeText={(t) => {
+                  let formatted = t.replace(/,/g, ".");
+                  formatted = formatted.replace(/[^0-9.]/g, "");
+                  const parts = formatted.split(".");
+                  if (parts.length > 2) {
+                    setWeight(parts[0] + "." + parts.slice(1).join(""));
+                  } else {
+                    setWeight(formatted);
+                  }
+                }}
+                keyboardType="decimal-pad"
                 placeholder={weightUnit === "kg" ? "KG" : "LBS"}
                 placeholderTextColor={themeColors.textSecondary}
               />
               <View style={styles.counterRow}>
                 <TouchableOpacity
-                  onPress={() => setWeight(Math.max(1, weight - 1))}
+                  onPress={() => {
+                    const w = parseFloat(weight) || 0;
+                    setWeight(Math.max(1, w - 1).toString());
+                  }}
                   style={[
                     styles.counterButton,
                     {
@@ -559,7 +572,10 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setWeight(weight + 1)}
+                  onPress={() => {
+                    const w = parseFloat(weight) || 0;
+                    setWeight((w + 1).toString());
+                  }}
                   style={[
                     styles.counterButton,
                     {
@@ -723,6 +739,24 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
             <Text style={styles.calculateButtonText}>Calculate BMI</Text>
             <MaterialIcons name="trending-up" size={24} color="#0d1b16" />
           </TouchableOpacity>
+
+          <View
+            style={{ marginTop: 10, marginBottom: 20, paddingHorizontal: 10 }}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                color: isDark ? "#64748b" : "#94a3b8",
+                textAlign: "center",
+                fontStyle: "italic",
+                lineHeight: 16,
+              }}
+            >
+              Disclaimer: BMI Go is not a medical device. It does not diagnose,
+              treat, cure, or prevent any medical condition. Please consult a
+              healthcare professional for medical advice.
+            </Text>
+          </View>
         </ScrollView>
       ) : activeTab === "stats" ? (
         <HistoryScreen onBack={() => setActiveTab("home")} />

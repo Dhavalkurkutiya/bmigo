@@ -557,10 +557,10 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                   <Text style={{ fontWeight: "bold", color: textMain }}>
                     3. App Permissions{"\n"}
                   </Text>
-                  The pedometer feature requires access to your device&apos;s
-                  motion sensors. This permission is used strictly to count your
-                  real-time steps and track daily activity. None of this motion
-                  data is transmitted externally.{"\n\n"}
+                  The application does not request or use any sensitive physical
+                  activity or motion sensors data. Your personal privacy is
+                  maintained at all times without unnecessary permissions.
+                  {"\n\n"}
                   <Text style={{ fontWeight: "bold", color: textMain }}>
                     4. Security{"\n"}
                   </Text>
@@ -568,7 +568,15 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
                   leave your device, it remains as secure as the device itself.
                   Please ensure you use device-level security (such as screen
                   locks) to protect your information from unauthorized physical
-                  access.
+                  access.{"\n\n"}
+                  <Text style={{ fontWeight: "bold", color: textMain }}>
+                    5. Medical Disclaimer{"\n"}
+                  </Text>
+                  This app is not a medical device and does not diagnose, treat,
+                  cure, or prevent any medical condition. The BMI calculation
+                  and related features are for informational purposes only.
+                  Please consult a qualified healthcare professional for medical
+                  advice regarding your health or weight changes.
                 </Text>
               </ScrollView>
             </View>
