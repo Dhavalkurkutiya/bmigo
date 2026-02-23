@@ -9,6 +9,7 @@ import Slider from "@react-native-community/slider";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  BackHandler,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -94,6 +95,23 @@ export default function BMICalculator({ onCalculate }: BMICalculatorProps) {
       keyboardDidShowListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+      if (activeTab !== "home") {
+        setActiveTab("home");
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [activeTab]);
 
   const handleCalculate = () => {
     // 1. Validate Inputs

@@ -472,7 +472,12 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
         </ScrollView>
 
         {/* Display Mode Modal */}
-        <Modal visible={showDisplayModeModal} transparent animationType="fade">
+        <Modal
+          visible={showDisplayModeModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowDisplayModeModal(false)}
+        >
           <TouchableWithoutFeedback
             onPress={() => setShowDisplayModeModal(false)}
           >
@@ -513,7 +518,12 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
         </Modal>
 
         {/* Privacy Policy Modal */}
-        <Modal visible={showPrivacyModal} transparent animationType="slide">
+        <Modal
+          visible={showPrivacyModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowPrivacyModal(false)}
+        >
           <View style={styles.privacyModalContainer}>
             <View
               style={[
@@ -588,6 +598,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           visible={showPersonalInfoModal}
           transparent
           animationType="slide"
+          onRequestClose={() => setShowPersonalInfoModal(false)}
         >
           <View style={styles.privacyModalContainer}>
             <View
@@ -706,6 +717,7 @@ export default function ProfileScreen({ onBack }: { onBack?: () => void }) {
           visible={showWeightHistoryModal}
           transparent
           animationType="slide"
+          onRequestClose={() => setShowWeightHistoryModal(false)}
         >
           <View style={styles.privacyModalContainer}>
             <View
