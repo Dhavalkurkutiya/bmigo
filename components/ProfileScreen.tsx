@@ -991,6 +991,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: TEXT_SUB,
+    textAlign: "center",
   },
   statsGrid: {
     paddingHorizontal: 24,
@@ -1034,11 +1035,13 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     gap: 4,
     marginBottom: 16,
+    flexWrap: "wrap",
   },
   statValue: {
     fontSize: 30,
     fontWeight: "900",
     letterSpacing: -1,
+    flexShrink: 1,
   },
   statStatus: {
     fontSize: 12,
@@ -1100,11 +1103,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    flex: 1,
   },
   itemTitle: {
     fontSize: 15,
     fontWeight: "600",
     color: TEXT_MAIN,
+    flexShrink: 1,
   },
   toggleSwitch: {
     width: 40,
@@ -1307,6 +1312,8 @@ const styles = StyleSheet.create({
   historyRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 8,
   },
   historyBlock: {
     alignItems: "center",

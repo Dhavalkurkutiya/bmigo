@@ -512,7 +512,7 @@ export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
             </View>
 
             <View style={styles.timelineContent}>
-              <View>
+              <View style={{ flexShrink: 1, marginRight: 8 }}>
                 <Text style={styles.timelineDate}>{formatDate(item.date)}</Text>
                 <Text
                   style={[
@@ -523,7 +523,7 @@ export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
                   {item.bmi.toFixed(1)} BMI
                 </Text>
               </View>
-              <View style={{ alignItems: "flex-end" }}>
+              <View style={{ alignItems: "flex-end", flexShrink: 1 }}>
                 <Text
                   style={[
                     styles.timelineWeight,
@@ -541,8 +541,9 @@ export default function HistoryScreen({ onBack }: { onBack?: () => void }) {
                   <Text
                     style={[
                       styles.statusBadgeText,
-                      { color: getStatusColor(item.status) },
+                      { color: getStatusColor(item.status), flexShrink: 1 },
                     ]}
+                    numberOfLines={2}
                   >
                     {item.status || "Normal"}
                   </Text>
@@ -614,6 +615,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 24,
+    flexWrap: "wrap",
+    gap: 8,
   },
   graphTitle: {
     color: "#94a3b8",
@@ -692,6 +695,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    flex: 1,
+    flexWrap: "wrap",
+    gap: 8,
   },
   timelineDate: {
     fontSize: 11,

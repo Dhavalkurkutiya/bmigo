@@ -905,6 +905,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: "#f1f5f9",
+    overflow: "hidden",
   },
   cardHeader: {
     flexDirection: "row",
@@ -949,6 +950,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#f1f5f9",
+    overflow: "hidden",
   },
   inputLarge: {
     fontSize: 32,
@@ -999,12 +1001,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
     color: "#0d1b16",
+    flexShrink: 1,
   },
   toggleDesc: {
     fontSize: 12,
     color: "#64748b",
     marginTop: 2,
     marginRight: 8,
+    flexShrink: 1,
   },
   calculateButton: {
     backgroundColor: "#2bee9d",

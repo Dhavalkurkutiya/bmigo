@@ -661,12 +661,22 @@ const ClassificationRow = ({
         borderBottomColor: themeColors.border,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          flex: 1,
+          paddingRight: 8,
+        }}
+      >
         <Text
           style={{
             color: isBold ? color : themeColors.textPrimary,
             fontWeight: isBold ? "bold" : "600",
             fontSize: 13,
+            flexShrink: 1,
+            flexWrap: "wrap",
           }}
         >
           {label}
@@ -830,11 +840,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#f8fafc",
     gap: 4,
+    flexWrap: "wrap",
   },
   diffText: {
     fontSize: 10,
     fontWeight: "bold",
     color: "#2bee9d",
+    flexShrink: 1,
   },
   cardFull: {
     backgroundColor: "#fff",
@@ -847,6 +859,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
   },
   smallLabel: {
     fontSize: 9,

@@ -1065,6 +1065,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
     gap: 24,
     justifyContent: "center",
+    flexWrap: "wrap",
   },
   featureItem: {
     flexDirection: "row",
