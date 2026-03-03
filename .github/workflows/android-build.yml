@@ -31,8 +31,8 @@ jobs:
 
       # Agar aapka 'android' folder GitHub par upload nai hua hai,
       # toh niche wali line enable kar dein:
-      # - name: Generate Android Folder
-      #   run: npx expo prebuild -p android
+      - name: Generate Android Folder
+        run: npx expo prebuild -p android --no-install
 
       - name: Build APK File
         run: |
