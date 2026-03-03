@@ -1,0 +1,47 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17" # React Native 0.73+ Java 17 mangta hai
+
+      - name: Install Dependencies
+        run: npm install
+
+      # Agar aapka 'android' folder GitHub par upload nai hua hai,
+      # toh niche wali line enable kar dein:
+      # - name: Generate Android Folder
+      #   run: npx expo prebuild -p android
+
+      - name: Build APK File
+        run: |
+          cd android
+          chmod +x ./gradlew # Gradlew ko execute access dene ke liye
+          ./gradlew assembleRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/app-release.apk
